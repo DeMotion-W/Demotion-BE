@@ -30,6 +30,7 @@ public class User implements UserDetails {
         this.password = password;
     }
 
+    // 권한 ROLE_USER로 고정
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
