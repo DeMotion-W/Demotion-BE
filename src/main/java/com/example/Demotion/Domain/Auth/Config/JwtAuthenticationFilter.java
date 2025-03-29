@@ -39,6 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         final String token = authHeader.substring(7);
+        System.out.println("🔐 Authorization Token: " + token);
 
         try {
             if (jwtUtil.validateToken(token)) {

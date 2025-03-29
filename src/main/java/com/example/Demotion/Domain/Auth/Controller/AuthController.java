@@ -1,13 +1,11 @@
 package com.example.Demotion.Domain.Auth.Controller;
 
 import com.example.Demotion.Domain.Auth.Config.JwtUtil;
-import com.example.Demotion.Domain.Auth.Dto.LoginRequestDto;
-import com.example.Demotion.Domain.Auth.Dto.LoginResponseDto;
-import com.example.Demotion.Domain.Auth.Dto.SignupRequestDto;
-import com.example.Demotion.Domain.Auth.Dto.TokenRequestDto;
+import com.example.Demotion.Domain.Auth.Dto.*;
 import com.example.Demotion.Domain.Auth.Entity.RefreshToken;
 import com.example.Demotion.Domain.Auth.Repository.RefreshTokenRepository;
 import com.example.Demotion.Domain.Auth.Service.CustomUserDetailService;
+import com.example.Demotion.Domain.Auth.Service.EmailService;
 import com.example.Demotion.Domain.Auth.Service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,6 +27,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final EmailService emailService;
 
     // Post : 회원가입
     @PostMapping("/signup")
@@ -66,7 +66,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/refresh")
+    @PostMapping("/login-refresh")
     public ResponseEntity<?> refreshToken(@RequestBody TokenRequestDto request) {
         String refreshToken = request.getRefreshToken();
 
@@ -84,5 +84,15 @@ public class AuthController {
 
         String newAccessToken = jwtUtil.generateToken(email);
         return ResponseEntity.ok().body(new LoginResponseDto("Bearer " + newAccessToken, refreshToken));
+    }
+
+    @PostMapping("/logout")
+    @Transactional
+    public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        String email = jwtUtil.getEmailFromToken(token);
+
+        refreshTokenRepository.deleteByEmail(email);
+        return ResponseEntity.ok("로그아웃되었습니다.");
     }
 }

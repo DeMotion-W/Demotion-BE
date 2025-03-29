@@ -30,7 +30,13 @@ public class SecurityConfig{
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(
+                                        "/api/auth/signup",
+                                        "/api/auth/login",
+                                        "/api/auth/email/send-code", // ✅ 이메일 인증 허용
+                                        "/api/auth/email/code-verify", // (이거도 있을 수 있음)
+                                        "/api/auth/refresh"
+                                ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

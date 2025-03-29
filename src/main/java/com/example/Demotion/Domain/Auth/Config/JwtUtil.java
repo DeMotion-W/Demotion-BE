@@ -61,7 +61,9 @@ public class JwtUtil {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
+            System.out.println("❌ JWT 유효성 검사 실패: " + e.getMessage());
             return false;
         }
     }
+
 }
