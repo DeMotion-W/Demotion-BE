@@ -1,0 +1,84 @@
+<!-- src/main/resources/static/step-test.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Step View Log 테스트</title>
+</head>
+<body>
+<h2>🆕 ViewLog 저장</h2>
+<label>Demo ID: <input type="number" id="newDemoId" /></label><br />
+<label>Session ID: <input type="text" id="newSessionId" /></label><br />
+<button onclick="saveViewLog()">ViewLog 저장</button>
+
+<hr />
+
+<h2>✅ Step View 저장</h2>
+<label>ViewLog ID: <input type="number" id="viewLogId" /></label><br />
+<label>Step ID: <input type="number" id="stepId" /></label><br />
+<label>체류 시간 (초): <input type="number" id="duration" /></label><br />
+<button onclick="saveStepView()">StepView 저장</button>
+
+<hr />
+
+<h2>📊 데모 통계 보기</h2>
+<label>Demo ID: <input type="number" id="demoId" /></label>
+<button onclick="getStats()">통계 조회</button>
+
+<pre id="result"></pre>
+
+<script>
+    async function saveViewLog() {
+        const data = {
+            demoId: parseInt(document.getElementById("newDemoId").value),
+            sessionId: document.getElementById("newSessionId").value
+        };
+
+        const response = await fetch("/api/view-log", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        document.getElementById("result").textContent = "ViewLog 저장 결과: " + response.status;
+    }
+
+    async function saveStepView() {
+        const data = {
+            viewLogId: parseInt(document.getElementById("viewLogId").value),
+            stepId: parseInt(document.getElementById("stepId").value),
+            duration: parseInt(document.getElementById("duration").value)
+        };
+
+        const response = await fetch("/api/step-view-log", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        document.getElementById("result").textContent = "StepView 저장 결과: " + response.status;
+    }
+
+    async function getStats() {
+        const demoId = document.getElementById("demoId").value;
+
+        const response = await fetch("/api/step-view-log/stats/" + demoId);
+        const json = await response.json();
+
+        if (!Array.isArray(json)) {
+            document.getElementById("result").textContent = "⚠️ 통계 데이터가 없거나 오류가 발생했습니다.";
+            return;
+        }
+
+        let output = `📊 Demo ID: ${demoId} 통계\n\n`;
+        json.forEach(step => {
+            output += `▶ Step ID: ${step.stepId}\n`;
+            output += `   - 조회수: ${step.viewCount}\n`;
+            output += `   - 평균 체류시간: ${step.avgDuration.toFixed(1)}초\n\n`;
+        });
+
+        document.getElementById("result").textContent = output;
+    }
+</script>
+</body>
+</html>

@@ -36,7 +36,9 @@ public class SecurityConfig{
                                         "/api/auth/email/send-code", // ✅ 이메일 인증 허용
                                         "/api/auth/email/code-verify", // (이거도 있을 수 있음)
                                         "/api/auth/refresh",
-                                        "/api/view-log/**"
+                                        "/api/view-log/**",
+                                        "/step-test.html", "/css/**", "/js/**",
+                                        "/api/step-view-log/**"
                                 ).permitAll()
                         .anyRequest().authenticated()
                 )
