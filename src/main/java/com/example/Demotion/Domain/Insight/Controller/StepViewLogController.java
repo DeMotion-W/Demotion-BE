@@ -35,9 +35,9 @@ public class StepViewLogController {
         return ResponseEntity.ok(stepViewLogService.getStepAverageDurations(stepIds));
     }
 
-    // ✅ demoId 기반 스텝 통계 한번에 반환
+    // 데모 기준 전체 스텝 통계 조회
     @GetMapping("/stats/{demoId}")
-    public ResponseEntity<List<Map<String, Object>>> stats(@PathVariable Long demoId) {
+    public ResponseEntity<List<Map<String, Object>>> getStats(@PathVariable Long demoId) {
         return ResponseEntity.ok(stepViewLogService.getStatsByDemoId(demoId));
     }
 }

@@ -1,0 +1,29 @@
+<!-- demo-player.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${demo.title} + ' - Demo Viewer'">Demo Viewer</title>
+    <style>
+        iframe {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<h2>📺 Demo 플레이어</h2>
+
+<p><strong>제목:</strong> <span th:text="${demo.title}">Demo 제목</span></p>
+<p><strong>Embed Code:</strong> <span th:text="${demo.embedCode}">1234</span></p>
+
+<h3>📽 미리보기</h3>
+<iframe th:src="@{http://localhost:8080/embed/{code}(code=${demo.embedCode})}" allowfullscreen>
+    이 브라우저는 iframe을 지원하지 않습니다.
+</iframe>
+
+<p style="color:gray;">※ 위 콘텐츠는 임베드용 주소로 연결됩니다. localhost에 임베드 서버가 실행 중이어야 합니다.</p>
+</body>
+</html>

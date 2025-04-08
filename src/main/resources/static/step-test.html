@@ -1,53 +1,107 @@
-<!-- src/main/resources/static/step-test.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>Step View Log 테스트</title>
+    <meta charset="UTF-8">
+    <title>▶️ Demo Test Flow</title>
 </head>
 <body>
-<h2>🆕 ViewLog 저장</h2>
-<label>Demo ID: <input type="number" id="newDemoId" /></label><br />
-<label>Session ID: <input type="text" id="newSessionId" /></label><br />
-<button onclick="saveViewLog()">ViewLog 저장</button>
-
+<h2>🚀 1. Demo 생성</h2>
+<label>Title: <input type="text" id="demoTitle" /></label><br />
+<label>Embed Code: <input type="text" id="embedCode" /></label><br />
+<button onclick="createDemo()">Demo 생성</button>
+<div id="demoPreview"></div>
 <hr />
 
-<h2>✅ Step View 저장</h2>
+<h2>🔹 2. 시청 (시청 로그 저장)</h2>
+<label>Demo ID: <input type="number" id="viewDemoId" /></label><br />
+<label>Session ID: <input type="text" id="sessionId" /></label><br />
+<button onclick="startViewing()">ViewLog 저장</button>
+<hr />
+
+<h2>🔄 3. Step 시청 기록</h2>
 <label>ViewLog ID: <input type="number" id="viewLogId" /></label><br />
 <label>Step ID: <input type="number" id="stepId" /></label><br />
-<label>체류 시간 (초): <input type="number" id="duration" /></label><br />
+<label>체류시간 (s): <input type="number" id="duration" /></label><br />
 <button onclick="saveStepView()">StepView 저장</button>
-
 <hr />
 
-<h2>📊 데모 통계 보기</h2>
-<label>Demo ID: <input type="number" id="demoId" /></label>
+<h2>📊 4. 통계 보기</h2>
+<label>Demo ID: <input type="number" id="statsDemoId" /></label>
 <button onclick="getStats()">통계 조회</button>
-
 <pre id="result"></pre>
 
 <script>
-    async function saveViewLog() {
-        const data = {
-            demoId: parseInt(document.getElementById("newDemoId").value),
-            sessionId: document.getElementById("newSessionId").value
-        };
+    function showMessage(msg) {
+        document.getElementById("result").textContent = msg;
+        alert(msg);
+    }
 
+    async function createDemo() {
+        const title = document.getElementById("demoTitle").value.trim();
+        const embedCode = document.getElementById("embedCode").value.trim();
+
+        if (!title || !embedCode) {
+            showMessage("⚠️ Title과 Embed Code는 필수입니다.");
+            return;
+        }
+
+        const data = { title, embedCode };
+        const response = await fetch("/api/demo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const resultText = await response.text();
+        const msg = response.ok ? "✅ Demo 생성 성공: " + resultText : "❌ Demo 생성 실패: " + resultText;
+        showMessage(msg);
+
+        // Demo 미리보기 iframe 삽입 (내부 라우팅 기준)
+        if (response.ok) {
+            document.getElementById("viewDemoId").value = resultText; // Demo ID 자동입력
+            const demoPreview = document.getElementById("demoPreview");
+            demoPreview.innerHTML = `
+                <h3>📺 Demo 미리보기</h3>
+                <iframe width="560" height="315" src="/embed/${embedCode}" frameborder="0" allowfullscreen></iframe>
+            `;
+        }
+    }
+
+    async function startViewing() {
+        const demoId = document.getElementById("viewDemoId").value;
+        const sessionId = document.getElementById("sessionId").value.trim();
+
+        if (!demoId || !sessionId) {
+            showMessage("⚠️ Demo ID와 Session ID는 필수입니다.");
+            return;
+        }
+
+        const data = { demoId: parseInt(demoId), sessionId };
         const response = await fetch("/api/view-log", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
         });
 
-        document.getElementById("result").textContent = "ViewLog 저장 결과: " + response.status;
+        const resultText = await response.text();
+        const msg = response.ok ? "✅ ViewLog 저장 성공: " + resultText : "❌ ViewLog 저장 실패: " + resultText;
+        showMessage(msg);
     }
 
     async function saveStepView() {
+        const viewLogId = document.getElementById("viewLogId").value;
+        const stepId = document.getElementById("stepId").value;
+        const duration = document.getElementById("duration").value;
+
+        if (!viewLogId || !stepId || !duration) {
+            showMessage("⚠️ 모든 항목(ViewLog ID, Step ID, 체류 시간)을 입력해야 합니다.");
+            return;
+        }
+
         const data = {
-            viewLogId: parseInt(document.getElementById("viewLogId").value),
-            stepId: parseInt(document.getElementById("stepId").value),
-            duration: parseInt(document.getElementById("duration").value)
+            viewLogId: parseInt(viewLogId),
+            stepId: parseInt(stepId),
+            duration: parseInt(duration)
         };
 
         const response = await fetch("/api/step-view-log", {
@@ -56,28 +110,37 @@
             body: JSON.stringify(data)
         });
 
-        document.getElementById("result").textContent = "StepView 저장 결과: " + response.status;
+        const resultText = await response.text();
+        const msg = response.ok ? "✅ StepView 저장 성공: " + resultText : "❌ StepView 저장 실패: " + resultText;
+        showMessage(msg);
+
+        if (response.ok) {
+            document.getElementById("viewLogId").value = "";
+            document.getElementById("stepId").value = "";
+            document.getElementById("duration").value = "";
+        }
     }
 
     async function getStats() {
-        const demoId = document.getElementById("demoId").value;
+        const demoId = document.getElementById("statsDemoId").value;
 
-        const response = await fetch("/api/step-view-log/stats/" + demoId);
-        const json = await response.json();
-
-        if (!Array.isArray(json)) {
-            document.getElementById("result").textContent = "⚠️ 통계 데이터가 없거나 오류가 발생했습니다.";
+        if (!demoId) {
+            showMessage("⚠️ Demo ID를 입력해주세요.");
             return;
         }
 
-        let output = `📊 Demo ID: ${demoId} 통계\n\n`;
-        json.forEach(step => {
-            output += `▶ Step ID: ${step.stepId}\n`;
-            output += `   - 조회수: ${step.viewCount}\n`;
-            output += `   - 평균 체류시간: ${step.avgDuration.toFixed(1)}초\n\n`;
-        });
+        const response = await fetch("/api/step-view-log/stats/" + demoId);
+        if (!response.ok) {
+            showMessage("❌ 통계 조회 실패");
+            return;
+        }
 
-        document.getElementById("result").textContent = output;
+        const json = await response.json();
+        const formatted = json.map(stat =>
+            `Step ${stat.stepId} - 조회수: ${stat.viewCount}, 평균 체류 시간: ${stat.avgDuration ? stat.avgDuration.toFixed(2) + "초" : "N/A"}`
+        ).join("\n");
+
+        document.getElementById("result").textContent = formatted;
     }
 </script>
 </body>

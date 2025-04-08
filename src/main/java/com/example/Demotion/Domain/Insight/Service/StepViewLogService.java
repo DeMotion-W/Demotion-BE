@@ -4,6 +4,7 @@ import com.example.Demotion.Domain.Insight.Entity.StepViewLog;
 import com.example.Demotion.Domain.Insight.Repository.StepViewLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -36,10 +37,10 @@ public class StepViewLogService {
         return map;
     }
 
-    // ✅ demoId 기준으로 모든 스텝별 통계 반환 (viewCount + avgDuration)
     public List<Map<String, Object>> getStatsByDemoId(Long demoId) {
         List<Object[]> rows = stepViewLogRepository.findStatsByDemoId(demoId);
         List<Map<String, Object>> result = new ArrayList<>();
+
         for (Object[] row : rows) {
             Map<String, Object> entry = new HashMap<>();
             entry.put("stepId", row[0]);
@@ -47,6 +48,7 @@ public class StepViewLogService {
             entry.put("avgDuration", row[2]);
             result.add(entry);
         }
+
         return result;
     }
 }

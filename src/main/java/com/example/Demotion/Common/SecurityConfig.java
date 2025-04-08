@@ -38,7 +38,8 @@ public class SecurityConfig{
                                         "/api/auth/refresh",
                                         "/api/view-log/**",
                                         "/step-test.html", "/css/**", "/js/**",
-                                        "/api/step-view-log/**"
+                                        "/api/step-view-log/**",
+                                        "/api/demo"
                                 ).permitAll()
                         .anyRequest().authenticated()
                 )
