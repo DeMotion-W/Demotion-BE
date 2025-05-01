@@ -24,15 +24,38 @@ repositories {
 }
 
 dependencies {
+	// JPA
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// Security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	// Starter web
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// Lombok
 	compileOnly 'org.projectlombok:lombok'
-	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
 	annotationProcessor 'org.projectlombok:lombok'
+
+	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// jwt
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+	// email
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+	// MySQL
+	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	// AWS
+	//implementation platform('software.amazon.awssdk:bom:2.25.0')
+	implementation 'software.amazon.awssdk:s3:2.25.0'
 }
 
 tasks.named('test') {
