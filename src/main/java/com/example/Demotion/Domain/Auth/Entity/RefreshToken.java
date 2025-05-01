@@ -15,7 +15,8 @@ public class RefreshToken {
     private Long id;
 
     private String email; // 토큰 주인 식별자
+    private String expiration; // 만료 시간
 
     @Column(nullable = false, unique = true)
-    private String token;
+    private String refresh; // 토큰
 }
