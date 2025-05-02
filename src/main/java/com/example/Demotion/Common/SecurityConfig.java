@@ -39,7 +39,9 @@ public class SecurityConfig{
                                         "/api/view-log/**",
                                         "/step-test.html", "/css/**", "/js/**",
                                         "/api/step-view-log/**",
-                                        "/api/demo"
+                                        "/api/demo",
+                                        "/test.html",
+                                        "/content/**" // 정적 HTML 허용
                                 ).permitAll()
                         .anyRequest().authenticated()
                 )
