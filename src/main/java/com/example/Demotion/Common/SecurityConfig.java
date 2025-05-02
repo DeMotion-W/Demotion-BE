@@ -29,6 +29,10 @@ public class SecurityConfig{
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
+                .headers(headers -> headers
+                        .defaultsDisabled() // ✅ 기본 헤더 비활성화 후
+                        .frameOptions(frame -> frame.sameOrigin()) // ✅ 새 방식
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                         "/api/auth/signup",

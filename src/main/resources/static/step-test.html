@@ -38,31 +38,35 @@
 
     async function createDemo() {
         const title = document.getElementById("demoTitle").value.trim();
-        const embedCode = document.getElementById("embedCode").value.trim();
+        const embedCodeInput = document.getElementById("embedCode").value.trim(); // ✅ 변수명 수정
 
-        if (!title || !embedCode) {
+        if (!title || !embedCodeInput) {
             showMessage("⚠️ Title과 Embed Code는 필수입니다.");
             return;
         }
 
-        const data = { title, embedCode };
+        const data = { title, embedCode: embedCodeInput };
+
         const response = await fetch("/api/demo", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
         });
 
-        const resultText = await response.text();
-        const msg = response.ok ? "✅ Demo 생성 성공: " + resultText : "❌ Demo 생성 실패: " + resultText;
+        const resultJson = await response.json();
+        const embedHtml = resultJson.embedCode;
+
+        const msg = response.ok
+            ? "✅ Demo 생성 성공: " + resultJson.title
+            : "❌ Demo 생성 실패";
         showMessage(msg);
 
-        // Demo 미리보기 iframe 삽입 (내부 라우팅 기준)
         if (response.ok) {
-            document.getElementById("viewDemoId").value = resultText; // Demo ID 자동입력
+            document.getElementById("viewDemoId").value = resultJson.id; // 자동 입력
             const demoPreview = document.getElementById("demoPreview");
             demoPreview.innerHTML = `
                 <h3>📺 Demo 미리보기</h3>
-                <iframe width="560" height="315" src="/embed/${embedCode}" frameborder="0" allowfullscreen></iframe>
+                ${embedHtml}
             `;
         }
     }
@@ -84,7 +88,9 @@
         });
 
         const resultText = await response.text();
-        const msg = response.ok ? "✅ ViewLog 저장 성공: " + resultText : "❌ ViewLog 저장 실패: " + resultText;
+        const msg = response.ok
+            ? "✅ ViewLog 저장 성공: " + resultText
+            : "❌ ViewLog 저장 실패: " + resultText;
         showMessage(msg);
     }
 
@@ -111,7 +117,9 @@
         });
 
         const resultText = await response.text();
-        const msg = response.ok ? "✅ StepView 저장 성공: " + resultText : "❌ StepView 저장 실패: " + resultText;
+        const msg = response.ok
+            ? "✅ StepView 저장 성공: " + resultText
+            : "❌ StepView 저장 실패: " + resultText;
         showMessage(msg);
 
         if (response.ok) {
