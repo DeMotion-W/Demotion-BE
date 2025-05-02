@@ -14,18 +14,18 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class PageViewLogService {
-
+//DB와 통신해서 조회기록을 저장하거나 조회 수를 계산하주는 리포지토리 객체
     private final PageViewLogRepository pageViewLogRepository;
 
     public void save(PageViewLog log) {
-        log.setViewedAt(LocalDateTime.now());
-        pageViewLogRepository.save(log);
+        log.setViewedAt(LocalDateTime.now()); //현재시각을 VIEWAT필들에 기록
+        pageViewLogRepository.save(log); //엔티티를 DB에 저장
     }
 
-    public Map<Integer, Long> getStats(Long demoId) {
+    public Map<Integer, Long> getStats(Long demoId) { // 레퍼지토리에서 JPQL 퀄리를 실행해서 가져온다.
         List<Object[]> results = pageViewLogRepository.countPageViewsByDemoId(demoId);
 
-        Map<Integer, Long> stats = new HashMap<>();
+        Map<Integer, Long> stats = new HashMap<>();//쿼리를 반복하면서 MAP에 넣기
         for (Object[] row : results) {
             stats.put((Integer) row[0], (Long) row[1]);
         }
