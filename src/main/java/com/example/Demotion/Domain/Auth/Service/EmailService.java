@@ -1,7 +1,9 @@
 package com.example.Demotion.Domain.Auth.Service;
 
 import com.example.Demotion.Domain.Auth.Entity.EmailVerificationCode;
+import com.example.Demotion.Domain.Auth.Entity.User;
 import com.example.Demotion.Domain.Auth.Repository.EmailVerificationCodeRepository;
+import com.example.Demotion.Domain.Auth.Repository.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -20,20 +22,15 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
     private final EmailVerificationCodeRepository codeRepository;
+    private final UserRepository userRepository;
 
     @Value("${spring.mail.username}")
     private String senderEmail;
 
     // 랜덤 인증코드 생성 (6자리)
     public String createCode() {
-        Random random = new Random();
-        StringBuilder key = new StringBuilder();
-
-        for (int i = 0; i < 6; i++) {
-            key.append(random.nextInt(10)); // 0 ~ 9
-        }
-
-        return key.toString();    }
+        return UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
 
     // 인증 메일 전송
     public void sendEmail(String toEmail, String code) throws MessagingException {
@@ -67,6 +64,29 @@ public class EmailService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
+        codeRepository.deleteAllByEmail(email);
         codeRepository.save(verification);
     }
+
+    // 이메일 인증번호 확인
+    public void verifyCodeAndActivate(String email, String code) {
+        EmailVerificationCode verification = codeRepository.findTopByEmailOrderByCreatedAtDesc(email)
+                .orElseThrow(() -> new IllegalArgumentException("인증번호를 찾을 수 없습니다."));
+
+        if (!verification.getCode().equals(code)) {
+            throw new IllegalArgumentException("인증번호가 올바르지 않습니다.");
+        }
+
+        if (verification.getCreatedAt().isBefore(LocalDateTime.now().minusMinutes(5))) {
+            throw new IllegalArgumentException("인증번호가 만료되었습니다.");
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        user.setEmailVerified(true);
+        userRepository.save(user);
+    }
+
+
 }

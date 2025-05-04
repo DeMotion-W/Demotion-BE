@@ -2,6 +2,7 @@ package com.example.Demotion.Common;
 
 import com.example.Demotion.Domain.Auth.Config.JwtAuthenticationEntryPoint;
 import com.example.Demotion.Domain.Auth.Config.JwtAuthenticationFilter;
+import com.example.Demotion.Domain.Auth.Service.UserDetailServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,8 +15,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity // Spring Security 활성화
@@ -24,18 +29,21 @@ public class SecurityConfig{
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final com.example.Demotion.Domain.Auth.Service.CustomUserDetailService userDetailService;
+    private final UserDetailServiceImpl userDetailService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                         "/api/auth/signup",
                                         "/api/auth/login",
-                                        "/api/auth/email/send-code", // ✅ 이메일 인증 허용
-                                        "/api/auth/email/code-verify", // (이거도 있을 수 있음)
-                                        "/api/auth/refresh"
+                                        "/api/auth/verify-email/request",
+                                        "/api/auth/verify-email/confirm",
+                                        "/api/auth/login-refresh",
+                                        "/api/auth/reset-password"
                                 ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -62,6 +70,20 @@ public class SecurityConfig{
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    // CORS 설정 (쿠키 포함 허용)
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:3000")); // 프론트 주소 (배포 시 변경)
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true); // 쿠키 전송 허용
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
 }
