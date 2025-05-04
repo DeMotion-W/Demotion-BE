@@ -2,10 +2,7 @@ package com.example.Demotion.Domain.Auth.Controller;
 
 import com.example.Demotion.Domain.Auth.Config.JwtUtil;
 import com.example.Demotion.Domain.Auth.Dto.*;
-import com.example.Demotion.Domain.Auth.Entity.RefreshToken;
 import com.example.Demotion.Domain.Auth.Repository.RefreshTokenRepository;
-import com.example.Demotion.Domain.Auth.Service.CustomUserDetailService;
-import com.example.Demotion.Domain.Auth.Service.EmailService;
 import com.example.Demotion.Domain.Auth.Service.AuthService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,12 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.http.Cookie;
 
 @RestController
 @RequestMapping("/api/auth")

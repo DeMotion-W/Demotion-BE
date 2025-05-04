@@ -12,7 +12,6 @@ import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.Cookie;
@@ -25,7 +24,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final CustomUserDetailService userDetailsService;
+    private final UserDetailServiceImpl userDetailsService;
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
     private final EmailVerificationCodeRepository codeRepository;
@@ -52,25 +51,23 @@ public class AuthService {
     }
 
     // 로그인
+    // 로그인
     public LoginResponseDto login(String email, String password, HttpServletResponse response) {
+        User user = (User) userDetailsService.loadUserByUsername(email);
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
-        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
         }
 
-        String accessToken = jwtUtil.generateToken(userDetails.getUsername());
-        String refreshToken = jwtUtil.generateRefreshToken(userDetails.getUsername());
+        String accessToken = jwtUtil.generateToken(user.getEmail());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
 
-        // 기존 refresh 토큰 제거 후 새로운 토큰 저장
-        refreshTokenRepository.deleteByEmail(userDetails.getUsername());
+        refreshTokenRepository.deleteByEmail(user.getEmail());
         refreshTokenRepository.save(RefreshToken.builder()
-                .email(userDetails.getUsername())
+                .email(user.getEmail())
                 .refresh(refreshToken)
                 .build());
 
-        // Refresh Token을 HttpOnly 쿠키에 저장
         Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
         refreshCookie.setHttpOnly(true);
         refreshCookie.setSecure(true);
@@ -80,6 +77,7 @@ public class AuthService {
 
         return new LoginResponseDto("Bearer " + accessToken, null);
     }
+
 
     // 토큰 갱신
     public LoginResponseDto refreshAccessToken(String refreshToken) {

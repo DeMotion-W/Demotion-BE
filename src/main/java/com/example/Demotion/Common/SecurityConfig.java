@@ -2,7 +2,7 @@ package com.example.Demotion.Common;
 
 import com.example.Demotion.Domain.Auth.Config.JwtAuthenticationEntryPoint;
 import com.example.Demotion.Domain.Auth.Config.JwtAuthenticationFilter;
-import com.example.Demotion.Domain.Auth.Service.CustomUserDetailService;
+import com.example.Demotion.Domain.Auth.Service.UserDetailServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,11 +29,13 @@ public class SecurityConfig{
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final CustomUserDetailService userDetailService;
+    private final UserDetailServiceImpl userDetailService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                         "/api/auth/signup",
@@ -75,7 +77,7 @@ public class SecurityConfig{
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:3000")); // 프론트 주소 (배포 시 변경)
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true); // 쿠키 전송 허용
 

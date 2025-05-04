@@ -1,8 +1,8 @@
-package com.example.Demotion.Domain.ImgFile.Controller;
+package com.example.Demotion.Domain.Demo.Controller;
 
-import com.example.Demotion.Domain.ImgFile.Dto.PreSignedUrlRequestDto;
-import com.example.Demotion.Domain.ImgFile.Dto.PreSignedUrlResponseDto;
-import com.example.Demotion.Domain.ImgFile.Service.S3UploaderService;
+import com.example.Demotion.Domain.Demo.Dto.PreSignedUrlRequestDto;
+import com.example.Demotion.Domain.Demo.Dto.PreSignedUrlResponseDto;
+import com.example.Demotion.Domain.Demo.Service.S3UploaderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
