@@ -73,7 +73,7 @@ public class DemoService {
         }
     }
 
-    // 데모 조회
+    // 특정 데모 조회
     @Transactional
     public DemoDetailResponseDto getDemoDetail(Long demoId, Long userId) {
         Demo demo = demoRepository.findById(demoId)
@@ -106,6 +106,27 @@ public class DemoService {
 
         dto.setScreenshots(screenshots);
         return dto;
+    }
+
+    // 데모 조회
+    public List<DemoDetailResponseDto> getDemoList(Long userId) {
+        List<Demo> demoList = demoRepository.findAllByUserId(userId);
+
+        return demoList.stream()
+                .map(DemoDetailResponseDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    // 특정 데모 삭제
+    public void deleteDemo(Long demoId, Long userId) {
+        Demo demo = demoRepository.findById(demoId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 데모가 존재하지 않습니다."));
+
+        if (!demo.getUser().getId().equals(userId)) {
+            throw new SecurityException("삭제 권한이 없습니다.");
+        }
+
+        demoRepository.delete(demo);
     }
 }
 
