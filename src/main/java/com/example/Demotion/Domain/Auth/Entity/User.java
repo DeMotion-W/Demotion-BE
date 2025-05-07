@@ -24,10 +24,18 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
+    private boolean emailVerified = false;
+
+    @Column(nullable = false)
+    private String name;
+
     @Builder
-    public User(String email, String password) {
+    public User(String email, String name, String password) {
         this.email = email;
+        this.name = name;
         this.password = password;
+        this.emailVerified = false;
     }
 
     // 권한 ROLE_USER로 고정

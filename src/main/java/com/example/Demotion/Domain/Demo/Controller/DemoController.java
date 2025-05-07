@@ -1,21 +1,72 @@
 package com.example.Demotion.Domain.Demo.Controller;
 
-import com.example.Demotion.Domain.Demo.Entity.Demo;
-import com.example.Demotion.Domain.Demo.Repository.DemoRepository;
+import com.example.Demotion.Domain.Auth.Entity.User;
+import com.example.Demotion.Domain.Demo.Dto.*;
+import com.example.Demotion.Domain.Demo.Service.DemoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.*;
 
-@RestController  //앱 서비스를 제공하는 컨틀롤러로, 반환값은 자동으로 json으로 변환된다
-@RequestMapping("/api/demo") // 이 컨트롤러의 기본 경로
-@RequiredArgsConstructor //final로 생성된 필드를 자동으로 생성자에게 주입
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/demos")
+@RequiredArgsConstructor
 public class DemoController {
 
-    private final DemoRepository demoRepository;
+    private final DemoService demoService;
 
+    // 데모 생성
     @PostMapping
-    public ResponseEntity<Demo> createDemo(@RequestBody Demo demo) {  //클라이언트가 보낸 json데이터를 demo라는 객체로 자동 매핑해준다.
-        Demo saved = demoRepository.save(demo); //받은 데모 객체를 db에 저장
-        return ResponseEntity.ok(saved); //저장된 객체를 200응답과 함께 json으로 클라이언트에게 돌려준다.
+    public ResponseEntity<CreateDemoResponseDto> createDemo(
+            @AuthenticationPrincipal User user,
+            @RequestBody CreateDemoRequestDto request
+    ) {
+        Long id = demoService.createDemo(request, user.getId());
+        return ResponseEntity.ok(new CreateDemoResponseDto(id));
+    }
+
+    // 데모 수정
+    @PutMapping("/{demoId}")
+    public ResponseEntity<CommonResponse> updateDemo(
+            @PathVariable Long demoId,
+            @AuthenticationPrincipal User userDetails,
+            @RequestBody UpdateDemoRequestDto request
+    ) {
+        Long userId = ((User) userDetails).getId();
+        demoService.updateDemo(demoId, userId, request);
+        return ResponseEntity.ok(new CommonResponse(true));
+    }
+
+    // 특정 데모 조회
+    @GetMapping("/{demoId}")
+    public ResponseEntity<DemoDetailResponseDto> getDemoDetail(
+            @PathVariable Long demoId,
+            @AuthenticationPrincipal User user
+    ) {
+        DemoDetailResponseDto dto = demoService.getDemoDetail(demoId, user.getId());
+        return ResponseEntity.ok(dto);
+    }
+
+    // 데모 조회
+    @GetMapping
+    public ResponseEntity<List<DemoDetailResponseDto>> getDemoList(
+            @AuthenticationPrincipal User user
+    ) {
+        List<DemoDetailResponseDto> demos = demoService.getDemoList(user.getId());
+        return ResponseEntity.ok(demos);
+    }
+
+    // 데모 삭제
+    @DeleteMapping("/{demoId}")
+    public ResponseEntity<CommonResponse> deleteDemo(
+        @PathVariable Long demoId,
+        @AuthenticationPrincipal User user
+    ){
+        demoService.deleteDemo(demoId, user.getId());
+        return ResponseEntity.ok(new CommonResponse(true));
     }
 }

@@ -1,14 +1,15 @@
 package com.example.Demotion.Domain.Demo.Entity;
 
+import com.example.Demotion.Domain.Auth.Entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-@Table(name = "demo")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
 public class Demo {
 
     @Id
@@ -16,14 +17,13 @@ public class Demo {
     private Long id;
 
     private String title;
+    private String subtitle;
+    // 필요하면 색상 변수 추가
 
-    @Column(name = "embed_code")
-    private String embedCode;
+    @OneToMany(mappedBy = "demo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Screenshot> screenshots;
 
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 }
