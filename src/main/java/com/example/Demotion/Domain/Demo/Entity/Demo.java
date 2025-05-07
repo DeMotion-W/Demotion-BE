@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -16,9 +17,12 @@ public class Demo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false)
+    private String publicId;
+
     private String title;
+
     private String subtitle;
-    // 필요하면 색상 변수 추가
 
     @OneToMany(mappedBy = "demo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Screenshot> screenshots;
@@ -26,4 +30,12 @@ public class Demo {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    // @PrePersist -> 엔티티가 처음 저장되기 전에 자동으로 실행되는 JPA 라이프사이클 콜백
+    @PrePersist
+    public void generatePublicId() {
+        if (this.publicId == null || this.publicId.isEmpty()) {
+            this.publicId = UUID.randomUUID().toString();
+        }
+    }
 }
