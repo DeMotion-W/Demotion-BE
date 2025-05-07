@@ -3,6 +3,7 @@ package com.example.Demotion.Domain.Demo.Controller;
 import com.example.Demotion.Domain.Auth.Entity.User;
 import com.example.Demotion.Domain.Demo.Dto.*;
 import com.example.Demotion.Domain.Demo.Service.DemoService;
+import com.example.Demotion.Domain.Demo.Service.EmbedDemoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -51,7 +52,7 @@ public class DemoController {
         return ResponseEntity.ok(dto);
     }
 
-    // 데모 조회
+    // 데모 조회 (인증된 user용)
     @GetMapping
     public ResponseEntity<List<DemoDetailResponseDto>> getDemoList(
             @AuthenticationPrincipal User user
