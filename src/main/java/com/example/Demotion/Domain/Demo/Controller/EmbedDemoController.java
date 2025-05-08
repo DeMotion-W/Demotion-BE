@@ -17,7 +17,7 @@ public class EmbedDemoController {
     private final EmbedDemoService embedDemoService;
 
     // 데모 조회 (익명의 user용)
-    @GetMapping("/embed/{publicId}")
+    @GetMapping("/{publicId}")
     public ResponseEntity<DemoDetailResponseDto> getPublicDemo(@PathVariable String publicId) {
         DemoDetailResponseDto dto = embedDemoService.getPublicDemoDetail(publicId);
         return ResponseEntity.ok(dto);

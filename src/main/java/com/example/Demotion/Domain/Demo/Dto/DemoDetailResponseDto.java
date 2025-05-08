@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 public class DemoDetailResponseDto {
 
     private Long demoId;
+    private String publicId;
     private String title;
     private String subTitle;
     private List<ScreenshotDto> screenshots;
@@ -18,6 +19,7 @@ public class DemoDetailResponseDto {
     public static DemoDetailResponseDto fromEntity(Demo demo) {
         DemoDetailResponseDto dto = new DemoDetailResponseDto();
         dto.setDemoId(demo.getId());
+        dto.setPublicId(demo.getPublicId());
         dto.setTitle(demo.getTitle());
         dto.setSubTitle(demo.getSubtitle());
 

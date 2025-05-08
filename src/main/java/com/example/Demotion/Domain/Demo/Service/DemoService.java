@@ -85,6 +85,7 @@ public class DemoService {
 
         DemoDetailResponseDto dto = new DemoDetailResponseDto();
         dto.setDemoId(demo.getId());
+        dto.setPublicId(demo.getPublicId());
         dto.setTitle(demo.getTitle());
         dto.setSubTitle(demo.getSubtitle());
 
