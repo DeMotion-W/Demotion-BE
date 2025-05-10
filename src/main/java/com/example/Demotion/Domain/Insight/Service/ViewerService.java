@@ -1,7 +1,9 @@
 package com.example.Demotion.Domain.Insight.Service;
 
 import com.example.Demotion.Domain.Demo.Entity.Demo;
+import com.example.Demotion.Domain.Demo.Entity.Screenshot;
 import com.example.Demotion.Domain.Demo.Repository.DemoRepository;
+import com.example.Demotion.Domain.Demo.Repository.ScreenshotRepository;
 import com.example.Demotion.Domain.Insight.Entity.ViewerEvent;
 import com.example.Demotion.Domain.Insight.Entity.ViewerSession;
 import com.example.Demotion.Domain.Insight.Repository.ViewerEventRepository;
@@ -17,6 +19,7 @@ public class ViewerService {
     private final DemoRepository demoRepository;
     private final ViewerSessionRepository sessionRepository;
     private final ViewerEventRepository eventRepository;
+    private final ScreenshotRepository screenshotRepository;
 
     // 세션 생성
     public Long startSession(String publicId, String email) {
@@ -37,8 +40,16 @@ public class ViewerService {
 
         ViewerEvent event = new ViewerEvent();
         event.setSession(session);
-        event.setScreenshotId(screenshotId);
         event.setTimestampMillis(timestampMillis);
+
+        if (screenshotId == 0L) {
+            // 썸네일 클릭 이벤트는 검증 없이 그대로 기록
+            event.setScreenshotId(0L);
+        } else {
+            Screenshot screenshot = screenshotRepository.findByIdAndDemo_PublicId(screenshotId, publicId)
+                    .orElseThrow(() -> new RuntimeException("Screenshot does not belong to this demo"));
+            event.setScreenshotId(screenshot.getId());
+        }
 
         eventRepository.save(event);
     }

@@ -4,6 +4,7 @@ import com.example.Demotion.Domain.Auth.Entity.User;
 import com.example.Demotion.Domain.Auth.Repository.UserRepository;
 import com.example.Demotion.Domain.Demo.Dto.CreateDemoRequestDto;
 import com.example.Demotion.Domain.Demo.Dto.DemoDetailResponseDto;
+import com.example.Demotion.Domain.Demo.Dto.DemoSummaryDto;
 import com.example.Demotion.Domain.Demo.Dto.UpdateDemoRequestDto;
 import com.example.Demotion.Domain.Demo.Entity.Demo;
 import com.example.Demotion.Domain.Demo.Entity.Screenshot;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,8 +67,8 @@ public class DemoService {
         demo.setSubtitle(request.getSubtitle());
 
         for (UpdateDemoRequestDto.ScreenshotUpdateRequest ssReq : request.getScreenshots()) {
-            Screenshot ss = screenshotRepository.findById(ssReq.getScreenshotId())
-                    .orElseThrow(() -> new RuntimeException("Screenshot not found"));
+            Screenshot ss = screenshotRepository.findByIdAndDemoId(ssReq.getScreenshotId(), demoId)
+                    .orElseThrow(() -> new RuntimeException("Screenshot does not belong to this demo"));
             ss.setButtonText(ssReq.getButtonText());
             ss.setButtonColor(ssReq.getButtonColor());
             ss.setButtonStyle(ssReq.getButtonStyle());
@@ -110,11 +112,25 @@ public class DemoService {
     }
 
     // 데모 조회
-    public List<DemoDetailResponseDto> getDemoList(Long userId) {
+    public List<DemoSummaryDto> getDemoList(Long userId) {
         List<Demo> demoList = demoRepository.findAllByUserId(userId);
 
         return demoList.stream()
-                .map(DemoDetailResponseDto::fromEntity)
+                .map(demo -> {
+                    String firstImageUrl = demo.getScreenshots().isEmpty()
+                            ? null
+                            : demo.getScreenshots().stream()
+                            .sorted(Comparator.comparingInt(Screenshot::getOrder)) // 순서대로
+                            .findFirst()
+                            .map(Screenshot::getFileUrl)
+                            .orElse(null);
+
+                    return new DemoSummaryDto(
+                            demo.getId(),
+                            firstImageUrl,
+                            demo.getCreatedAt()
+                    );
+                })
                 .collect(Collectors.toList());
     }
 

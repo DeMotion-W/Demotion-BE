@@ -52,12 +52,12 @@ public class DemoController {
         return ResponseEntity.ok(dto);
     }
 
-    // 데모 조회 (인증된 user용)
+    // 데모 리스트 조회
     @GetMapping
-    public ResponseEntity<List<DemoDetailResponseDto>> getDemoList(
+    public ResponseEntity<List<DemoSummaryDto>> getDemoList(
             @AuthenticationPrincipal User user
     ) {
-        List<DemoDetailResponseDto> demos = demoService.getDemoList(user.getId());
+        List<DemoSummaryDto> demos = demoService.getDemoList(user.getId());
         return ResponseEntity.ok(demos);
     }
 

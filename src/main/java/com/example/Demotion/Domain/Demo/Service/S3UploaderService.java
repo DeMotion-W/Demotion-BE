@@ -20,10 +20,11 @@ public class S3UploaderService {
     private String bucket;
 
     public URL generatePreSignedUrl(String key) {
+        //String contentType = determineContentType(key); // 확장자에 따라 MIME 타입 결정
+
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
-                .contentType("image/png")
                 .build();
 
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
@@ -33,5 +34,11 @@ public class S3UploaderService {
 
         return s3Presigner.presignPutObject(presignRequest).url();
     }
+//
+//    private String determineContentType(String key) {
+//        if (key.endsWith(".png")) return "image/png";
+//        if (key.endsWith(".jpg") || key.endsWith(".jpeg")) return "image/jpeg";
+//        return "application/octet-stream"; // 기본값
+//    }
 }
 

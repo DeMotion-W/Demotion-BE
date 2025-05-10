@@ -30,48 +30,64 @@ public class InsightService {
     public InsightStatResponseDto.Response getStat(Long demoId, Long userId) {
         Demo demo = validateDemoAccess(demoId, userId);
 
-        List<ViewerSession> sessions = sessionRepository.findAllByDemoId(demoId); // 해당 데모 조회한 모든 세션들
-        List<ViewerEvent> events = eventRepository.findAllBySession_DemoId(demoId); // 특정 데모 ID와 연결된 모든 세션에 속한 모든 이벤트 세션들
+        List<ViewerSession> sessions = sessionRepository.findAllByDemoId(demoId);
+        List<ViewerEvent> events = eventRepository.findAllBySession_DemoId(demoId);
 
-        int viewCount = sessions.size(); // [조회수] 총 시청 세션 수
+        int viewCount = sessions.size(); // [전체 조회수] 중복 포함? -> 확인 필요
 
-        Set<Long> completedSessionIds = new HashSet<>(); // 완주한 세션 ID 저장용
-        Map<Long, List<Long>> durations = new HashMap<>(); // 각 스크린샷별 체류시간 목록
+        int completedCount = 0; // [완주율] 세션 중복 포함 -> 확인 필요
+        Map<Long, List<Long>> durationMap = new HashMap<>(); // screenshotId -> [durations]
+        Map<Long, Integer> viewCountMap = new HashMap<>();   // screenshotId -> view count
 
-        // 각 세션마다 이벤트를 시간순으로 정렬해 분석
+        // 모든 스크린샷 ID를 미리 확보 (0부터 N까지 포함)
+        List<Long> allScreenshotIds = demo.getScreenshots().stream()
+                .map(s -> s.getId())
+                .toList();
+
+        Long lastScreenshotId = demo.getScreenshots().get(demo.getScreenshots().size() - 1).getId(); // 데모의 마지막 스크린샷 ID
+
+        // 데모를 조회한 각 세션별로 차례로
         for (ViewerSession session : sessions) {
             List<ViewerEvent> evts = events.stream()
-                    .filter(e -> e.getSession().getId().equals(session.getId())) // 해당 세션에 속한 이벤트만 필터링
-                    .sorted(Comparator.comparingLong(ViewerEvent::getTimestampMillis)) // 시간순 정렬
+                    .filter(e -> e.getSession().getId().equals(session.getId()))
+                    .sorted(Comparator.comparingLong(ViewerEvent::getTimestampMillis)) // 시간순 이벤트 정렬
                     .toList();
 
-            // 현재 스크린샷 ID 기준으로 체류시간 측정 (현재 - 이전 클릭 시각)
-            for (int i = 1; i < evts.size(); i++) {
-                Long currentScreenshotId = evts.get(i).getScreenshotId();
-                long duration = evts.get(i).getTimestampMillis() - evts.get(i - 1).getTimestampMillis();
-                durations.computeIfAbsent(currentScreenshotId, k -> new ArrayList<>()).add(duration); // 리스트에 체류시간 추가
+            // 스크린샷 조회수 집계
+            for (ViewerEvent e : evts) {
+                Long sid = e.getScreenshotId(); // 작은 수의 id부터
+                viewCountMap.put(sid, viewCountMap.getOrDefault(sid, 0) + 1); // 해당 스크린샷 조회수 올리기
             }
 
-            // 세션이 마지막 스크린샷까지 도달했는지 확인하여 완주 처리
-            if (!evts.isEmpty()) {
-                Long lastScreenshotId = demo.getScreenshots().get(demo.getScreenshots().size() - 1).getId();
-                Long lastSeenId = evts.get(evts.size() - 1).getScreenshotId();
-                if (Objects.equals(lastScreenshotId, lastSeenId)) {
-                    completedSessionIds.add(session.getId()); // 완주했으면 리스트에 추가
-                }
+            // 스크린샷 체류시간 집계
+            for (int i = 1; i < evts.size(); i++) {
+                Long prevId = evts.get(i - 1).getScreenshotId();
+                Long currId = evts.get(i).getScreenshotId();
+                if (Objects.equals(prevId, currId)) continue;
+
+                long duration = evts.get(i).getTimestampMillis() - evts.get(i - 1).getTimestampMillis();
+                durationMap.computeIfAbsent(currId, k -> new ArrayList<>()).add(duration);
+            }
+
+            // 마지막 스크린샷까지 본 경우 완주로 간주
+            if (!evts.isEmpty() && Objects.equals(evts.get(evts.size() - 1).getScreenshotId(), lastScreenshotId)) {
+                completedCount++;
             }
         }
 
-        // [완주율] 계산: (완주한 세션 수 / 전체 세션 수) * 100
-        double completionRate = viewCount == 0 ? 0 : ((double) completedSessionIds.size() * 100) / viewCount;
+        // 완주율 계산
+        double completionRate = viewCount == 0 ? 0 : ((double) completedCount * 100) / viewCount;
 
-        // [각 스크린샷별 평균 체류 시간 및 조회수] 계산
-        List<InsightStatResponseDto.Response.ScreenshotStat> stats = durations.entrySet().stream()
-                .map(entry -> {
-                    long avgDuration = (long) entry.getValue().stream().mapToLong(l -> l).average().orElse(0);
-                    return new InsightStatResponseDto.Response.ScreenshotStat(
-                            entry.getKey(), entry.getValue().size(), avgDuration); // screenshotId, 조회수, 평균 체류시간
-                }).toList();
+        // 모든 스크린샷에 대해 평균 체류시간 및 조회수 계산 (screenshotId 0 포함)
+        List<InsightStatResponseDto.Response.ScreenshotStat> stats = new ArrayList<>();
+        for (Long sid : allScreenshotIds) {
+            int count = viewCountMap.getOrDefault(sid, 0);
+            List<Long> durations = durationMap.getOrDefault(sid, null);
+            Long avgDuration = (durations == null || durations.isEmpty())
+                    ? null
+                    : Math.round(durations.stream().mapToLong(l -> l).average().orElse(0));
+            stats.add(new InsightStatResponseDto.Response.ScreenshotStat(sid, count, avgDuration));
+        }
 
         return new InsightStatResponseDto.Response(viewCount, completionRate, stats);
     }
@@ -106,4 +122,5 @@ public class InsightService {
         }
         return demo;
     }
+
 }
