@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/s3")
+@RequestMapping("/api")
 public class ImgFileController {
 
     private final S3UploaderService s3UploaderService;

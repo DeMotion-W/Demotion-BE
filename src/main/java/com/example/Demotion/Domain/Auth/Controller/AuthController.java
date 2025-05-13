@@ -1,5 +1,7 @@
 package com.example.Demotion.Domain.Auth.Controller;
 
+import com.example.Demotion.Common.ErrorCode;
+import com.example.Demotion.Common.ErrorDomain;
 import com.example.Demotion.Domain.Auth.Config.JwtUtil;
 import com.example.Demotion.Domain.Auth.Dto.*;
 import com.example.Demotion.Domain.Auth.Repository.RefreshTokenRepository;
@@ -14,6 +16,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -26,45 +30,57 @@ public class AuthController {
     // 회원가입
     @PostMapping("/signup")
     public ResponseEntity<String> registerUser(@RequestBody SignupRequestDto request) {
-        try {
-            authService.registerUser(request.getEmail(), request.getName(), request.getPassword());
-            return ResponseEntity.ok("회원가입이 성공적으로 완료되었습니다.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        authService.registerUser(
+                request.getEmail(),
+                request.getName(),
+                request.getPassword()
+        );
+        return ResponseEntity.status(201).build(); // body 없이 상태만
     }
 
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto request, HttpServletResponse response) {
         try {
-            LoginResponseDto result = authService.login(request.getEmail(), request.getPassword(), response);
-            return ResponseEntity.ok().body(result);
-        } catch (UsernameNotFoundException e) {
-            return ResponseEntity.status(404).body("사용자를 찾을 수 없습니다.");
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.status(401).body("비밀번호가 일치하지 않습니다.");
+            LoginResponseDto result = authService.login(request.email(), request.password(), response);
+            return ResponseEntity.ok(result);
+
+        } catch (UsernameNotFoundException | BadCredentialsException e) {
+            throw new ErrorDomain(ErrorCode.INVALID_CREDENTIALS); // 명세 1002
+        } catch (Exception e) {
+            throw new ErrorDomain(ErrorCode.INTERNAL_SERVER_ERROR); // 명세 1500
         }
     }
 
     // 토큰 갱신
     @PostMapping("/login-refresh")
-    public ResponseEntity<?> refreshToken(@CookieValue(value = "refreshToken", required = false) String refreshToken) {
+    public ResponseEntity<?> refreshToken(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken,
+            HttpServletResponse response
+    ) {
         try {
-            LoginResponseDto newToken = authService.refreshAccessToken(refreshToken);
+            LoginResponseDto newToken = authService.refreshAccessToken(refreshToken, response);
             return ResponseEntity.ok(newToken);
-        } catch (JwtException e) {
-            return ResponseEntity.status(401).body(e.getMessage());
+
+        } catch (ErrorDomain e) {
+            throw e; // GlobalExceptionHandler에서 처리
+        } catch (Exception e) {
+            throw new ErrorDomain(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 
     // 로그아웃
     @PostMapping("/logout")
     @Transactional
-    public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader, HttpServletResponse response) {
+    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                    HttpServletResponse response) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new ErrorDomain(ErrorCode.MISSING_AUTHORIZATION_HEADER);
+        }
+
         String token = authHeader.replace("Bearer ", "");
         authService.logout(token, response);
-        return ResponseEntity.ok("로그아웃되었습니다.");
+        return ResponseEntity.ok(Map.of("success", true));
     }
 
     @PostMapping("/reset-password")

@@ -1,5 +1,7 @@
 package com.example.Demotion.Domain.Demo.Service;
 
+import com.example.Demotion.Common.ErrorCode;
+import com.example.Demotion.Common.ErrorDomain;
 import com.example.Demotion.Domain.Auth.Entity.User;
 import com.example.Demotion.Domain.Auth.Repository.UserRepository;
 import com.example.Demotion.Domain.Demo.Dto.CreateDemoRequestDto;
@@ -26,41 +28,47 @@ public class DemoService {
     private final ScreenshotRepository screenshotRepository;
     private final UserRepository userRepository;
 
-    // 데모 생성
     public Long createDemo(CreateDemoRequestDto request, Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ErrorDomain(ErrorCode.USER_NOT_FOUND));
 
-        Demo demo = new Demo();
-        demo.setTitle(request.getTitle());
-        demo.setSubtitle(request.getSubtitle());
-        demo.setUser(user); // 🔥 사용자 연관관계 설정
+        if (request.getTitle() == null || request.getSubtitle() == null || request.getScreenshots() == null || request.getScreenshots().isEmpty()) {
+            throw new ErrorDomain(ErrorCode.MISSING_REQUIRED_FIELDS);
+        }
 
-        var screenshots = request.getScreenshots().stream().map(s -> {
-            Screenshot ss = new Screenshot();
-            ss.setFileUrl(s.getFileUrl());
-            ss.setButtonText(s.getButtonText());
-            ss.setButtonColor(s.getButtonColor());
-            ss.setButtonStyle(s.getButtonStyle());
-            ss.setPositionX(s.getPositionX());
-            ss.setPositionY(s.getPositionY());
-            ss.setDemo(demo); // 연관관계 설정
-            return ss;
-        }).collect(Collectors.toList());
+        try {
+            Demo demo = new Demo();
+            demo.setTitle(request.getTitle());
+            demo.setSubtitle(request.getSubtitle());
+            demo.setUser(user);
 
-        demo.setScreenshots(screenshots);
+            var screenshots = request.getScreenshots().stream().map(s -> {
+                Screenshot ss = new Screenshot();
+                ss.setFileUrl(s.getFileUrl());
+                ss.setButtonText(s.getButtonText());
+                ss.setButtonColor(s.getButtonColor());
+                ss.setButtonStyle(s.getButtonStyle());
+                ss.setPositionX(s.getPositionX());
+                ss.setPositionY(s.getPositionY());
+                ss.setDemo(demo);
+                return ss;
+            }).collect(Collectors.toList());
 
-        return demoRepository.save(demo).getId();
+            demo.setScreenshots(screenshots);
+            return demoRepository.save(demo).getId();
+
+        } catch (Exception e) {
+            throw new ErrorDomain(ErrorCode.DEMO_DB_SAVE_FAILED);
+        }
     }
 
-    // 데모 수정
     @Transactional
     public void updateDemo(Long demoId, Long userId, UpdateDemoRequestDto request) {
         Demo demo = demoRepository.findById(demoId)
-                .orElseThrow(() -> new RuntimeException("Demo not found"));
+                .orElseThrow(() -> new ErrorDomain(ErrorCode.DEMO_NOT_FOUND));
 
         if (!demo.getUser().getId().equals(userId)) {
-            throw new RuntimeException("No permission to edit this demo");
+            throw new ErrorDomain(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
         demo.setTitle(request.getTitle());
@@ -68,21 +76,20 @@ public class DemoService {
 
         for (UpdateDemoRequestDto.ScreenshotUpdateRequest ssReq : request.getScreenshots()) {
             Screenshot ss = screenshotRepository.findByIdAndDemoId(ssReq.getScreenshotId(), demoId)
-                    .orElseThrow(() -> new RuntimeException("Screenshot does not belong to this demo"));
+                    .orElseThrow(() -> new ErrorDomain(ErrorCode.SCREENSHOT_NOT_FOUND));
             ss.setButtonText(ssReq.getButtonText());
             ss.setButtonColor(ssReq.getButtonColor());
             ss.setButtonStyle(ssReq.getButtonStyle());
         }
     }
 
-    // 특정 데모 조회
     @Transactional
     public DemoDetailResponseDto getDemoDetail(Long demoId, Long userId) {
         Demo demo = demoRepository.findById(demoId)
-                .orElseThrow(() -> new RuntimeException("데모가 존재하지 않습니다."));
+                .orElseThrow(() -> new ErrorDomain(ErrorCode.DEMO_NOT_FOUND));
 
         if (!demo.getUser().getId().equals(userId)) {
-            throw new RuntimeException("해당 데모에 접근할 수 없습니다.");
+            throw new ErrorDomain(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
         DemoDetailResponseDto dto = new DemoDetailResponseDto();
@@ -92,12 +99,12 @@ public class DemoService {
         dto.setSubTitle(demo.getSubtitle());
 
         List<DemoDetailResponseDto.ScreenshotDto> screenshots = demo.getScreenshots().stream()
-                .sorted((a, b) -> Long.compare(a.getId(), b.getId()))
+                .sorted(Comparator.comparingInt(Screenshot::getOrder))
                 .map(s -> {
                     DemoDetailResponseDto.ScreenshotDto ssDto = new DemoDetailResponseDto.ScreenshotDto();
                     ssDto.setScreenshotId(s.getId());
                     ssDto.setFileUrl(s.getFileUrl());
-                    ssDto.setOrder(0); // order 필드 있다면 적용
+                    ssDto.setOrder(s.getOrder());
                     ssDto.setButtonText(s.getButtonText());
                     ssDto.setButtonColor(s.getButtonColor());
                     ssDto.setButtonStyle(s.getButtonStyle());
@@ -111,39 +118,42 @@ public class DemoService {
         return dto;
     }
 
-    // 데모 조회
     public List<DemoSummaryDto> getDemoList(Long userId) {
-        List<Demo> demoList = demoRepository.findAllByUserId(userId);
+        try {
+            return demoRepository.findAllByUserId(userId).stream()
+                    .map(demo -> {
+                        String firstImageUrl = demo.getScreenshots().stream()
+                                .sorted(Comparator.comparingInt(Screenshot::getOrder))
+                                .findFirst()
+                                .map(Screenshot::getFileUrl)
+                                .orElse(null);
 
-        return demoList.stream()
-                .map(demo -> {
-                    String firstImageUrl = demo.getScreenshots().isEmpty()
-                            ? null
-                            : demo.getScreenshots().stream()
-                            .sorted(Comparator.comparingInt(Screenshot::getOrder)) // 순서대로
-                            .findFirst()
-                            .map(Screenshot::getFileUrl)
-                            .orElse(null);
-
-                    return new DemoSummaryDto(
-                            demo.getId(),
-                            firstImageUrl,
-                            demo.getCreatedAt()
-                    );
-                })
-                .collect(Collectors.toList());
+                        return new DemoSummaryDto(
+                                demo.getId(),
+                                firstImageUrl,
+                                demo.getCreatedAt()
+                        );
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new ErrorDomain(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    // 특정 데모 삭제
     public void deleteDemo(Long demoId, Long userId) {
         Demo demo = demoRepository.findById(demoId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 데모가 존재하지 않습니다."));
+                .orElseThrow(() -> new ErrorDomain(ErrorCode.DEMO_NOT_FOUND));
 
         if (!demo.getUser().getId().equals(userId)) {
-            throw new SecurityException("삭제 권한이 없습니다.");
+            throw new ErrorDomain(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        demoRepository.delete(demo);
+        try {
+            demoRepository.delete(demo);
+        } catch (Exception e) {
+            throw new ErrorDomain(ErrorCode.DEMO_DELETE_FAILED);
+        }
     }
 }
+
 

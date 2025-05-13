@@ -1,14 +1,12 @@
+// DemoController.java
 package com.example.Demotion.Domain.Demo.Controller;
 
 import com.example.Demotion.Domain.Auth.Entity.User;
 import com.example.Demotion.Domain.Demo.Dto.*;
 import com.example.Demotion.Domain.Demo.Service.DemoService;
-import com.example.Demotion.Domain.Demo.Service.EmbedDemoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,11 +32,10 @@ public class DemoController {
     @PutMapping("/{demoId}")
     public ResponseEntity<CommonResponse> updateDemo(
             @PathVariable Long demoId,
-            @AuthenticationPrincipal User userDetails,
+            @AuthenticationPrincipal User user,
             @RequestBody UpdateDemoRequestDto request
     ) {
-        Long userId = ((User) userDetails).getId();
-        demoService.updateDemo(demoId, userId, request);
+        demoService.updateDemo(demoId, user.getId(), request);
         return ResponseEntity.ok(new CommonResponse(true));
     }
 
@@ -64,9 +61,9 @@ public class DemoController {
     // 데모 삭제
     @DeleteMapping("/{demoId}")
     public ResponseEntity<CommonResponse> deleteDemo(
-        @PathVariable Long demoId,
-        @AuthenticationPrincipal User user
-    ){
+            @PathVariable Long demoId,
+            @AuthenticationPrincipal User user
+    ) {
         demoService.deleteDemo(demoId, user.getId());
         return ResponseEntity.ok(new CommonResponse(true));
     }

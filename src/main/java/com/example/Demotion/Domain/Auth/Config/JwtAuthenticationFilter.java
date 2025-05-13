@@ -30,7 +30,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        System.out.println("✅ JwtAuthenticationFilter 도착: " + request.getMethod() + " " + request.getRequestURI());
+        String path = request.getRequestURI();
+
+        // 인증이 필요 없는 경로들 (예외 처리)
+        if ((path.equals("/api/auth/signup") ||
+                path.equals("/api/auth/login") ||
+                path.equals("/api/auth/verify-email/request") ||
+                path.equals("/api/auth/verify-email/confirm") ||
+                path.equals("/api/auth/login-refresh") ||
+                path.equals("/api/auth/reset-password") ||
+                path.startsWith("/api/embed/"))
+        ) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         final String authHeader = request.getHeader("Authorization");
 
@@ -61,4 +74,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+
 }
