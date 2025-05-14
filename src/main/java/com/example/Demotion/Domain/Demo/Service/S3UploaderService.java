@@ -21,6 +21,10 @@ public class S3UploaderService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+    @Value("${cloud.aws.region.static}")
+    private String region;
+
+    // preSigned Url 생성
     public URL generatePreSignedUrl(String key) {
         validateFileExtension(key);
 
@@ -41,6 +45,12 @@ public class S3UploaderService {
         }
     }
 
+    // 객체 url 조회
+    public String getObjectUrl(String key) {
+        return String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, region, key);
+    }
+
+    // 확장자 확인
     private void validateFileExtension(String key) {
         if (!(key.endsWith(".png") || key.endsWith(".jpg") || key.endsWith(".jpeg"))) {
             throw new ErrorDomain(ErrorCode.INVALID_FILE_FORMAT);
