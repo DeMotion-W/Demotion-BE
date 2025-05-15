@@ -8,5 +8,4 @@ import java.util.Optional;
 
 public interface DemoRepository extends JpaRepository<Demo, Long> {
     List<Demo> findAllByUserId(Long userId);
-    Optional<Demo> findByPublicId(String publicId);
 }

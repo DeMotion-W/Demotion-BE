@@ -9,6 +9,7 @@ public class UpdateDemoRequestDto {
 
     private String title;
     private String subtitle;
+    private String buttonColor;
     private List<ScreenshotUpdateRequest> screenshots;
 
     @Data

@@ -11,17 +11,17 @@ import java.util.stream.Collectors;
 public class DemoDetailResponseDto {
 
     private Long demoId;
-    private String publicId;
     private String title;
     private String subTitle;
+    private String buttonColor;
     private List<ScreenshotDto> screenshots;
 
     public static DemoDetailResponseDto fromEntity(Demo demo) {
         DemoDetailResponseDto dto = new DemoDetailResponseDto();
         dto.setDemoId(demo.getId());
-        dto.setPublicId(demo.getPublicId());
         dto.setTitle(demo.getTitle());
         dto.setSubTitle(demo.getSubtitle());
+        dto.setButtonColor(demo.getButtonColor());
 
         List<ScreenshotDto> screenshotDtos = demo.getScreenshots().stream()
                 .sorted(Comparator.comparingInt(Screenshot::getOrder)) // order 기준으로 오름차순 정렬

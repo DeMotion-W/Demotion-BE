@@ -19,31 +19,18 @@ public class Demo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String publicId;
+    private String title; // 제목
 
-    private String title;
+    private String subtitle; // 부제목
 
-    private String subtitle;
+    private String buttonColor; // 버튼 색상
+
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "demo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Screenshot> screenshots;
 
-    @Column(updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdAt;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
-    // @PrePersist -> 엔티티가 처음 저장되기 전에 자동으로 실행되는 JPA 라이프사이클 콜백
-    @PrePersist
-    protected void onPrePersist() {
-        if (this.publicId == null || this.publicId.isEmpty()) {
-            this.publicId = UUID.randomUUID().toString();
-        }
-
-        this.createdAt = LocalDateTime.now();
-    }
 }

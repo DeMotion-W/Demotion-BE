@@ -7,5 +7,4 @@ import java.util.Optional;
 
 public interface ScreenshotRepository extends JpaRepository<Screenshot, Long> {
     Optional<Screenshot> findByIdAndDemoId(Long screenshotId, Long demoId);
-    Optional<Screenshot> findByIdAndDemo_PublicId(Long screenshotId, String publicId);
 }

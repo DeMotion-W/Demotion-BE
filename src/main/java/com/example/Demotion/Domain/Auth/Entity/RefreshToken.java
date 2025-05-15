@@ -3,6 +3,8 @@ package com.example.Demotion.Domain.Auth.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -20,4 +22,7 @@ public class RefreshToken {
 
     @Column(nullable = false, unique = true)
     private String refresh; // 토큰
+
+    private LocalDateTime createdAt = LocalDateTime.now();
+
 }

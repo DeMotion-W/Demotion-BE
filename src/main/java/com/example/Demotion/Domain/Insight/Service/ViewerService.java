@@ -22,8 +22,8 @@ public class ViewerService {
     private final ScreenshotRepository screenshotRepository;
 
     // 세션 생성
-    public Long startSession(String publicId, String email) {
-        Demo demo = demoRepository.findByPublicId(publicId)
+    public Long startSession(Long demoId, String email) {
+        Demo demo = demoRepository.findById(demoId)
                 .orElseThrow(() -> new RuntimeException("Demo not found"));
 
         ViewerSession session = new ViewerSession();
@@ -34,20 +34,29 @@ public class ViewerService {
     }
 
     // 세션별 이벤트 생성
-    public void recordStep(Long sessionId, String publicId, Long screenshotId, Long timestampMillis) {
-        ViewerSession session = sessionRepository.findByIdAndDemo_PublicId(sessionId, publicId)
-                .orElseThrow(() -> new RuntimeException("Session not found or does not match publicId"));
+    public void recordStep(Long sessionId, Long demoId, Long screenshotId, Long timestampMillis) {
+        ViewerSession session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new RuntimeException("Session not found"));
+
+        if (!session.getDemo().getId().equals(demoId)) {
+            throw new RuntimeException("Session does not belong to this demo");
+        }
 
         ViewerEvent event = new ViewerEvent();
         event.setSession(session);
         event.setTimestampMillis(timestampMillis);
 
         if (screenshotId == 0L) {
-            // 썸네일 클릭 이벤트는 검증 없이 그대로 기록
+            // 썸네일 클릭 이벤트는 검증 없이 기록
             event.setScreenshotId(0L);
         } else {
-            Screenshot screenshot = screenshotRepository.findByIdAndDemo_PublicId(screenshotId, publicId)
-                    .orElseThrow(() -> new RuntimeException("Screenshot does not belong to this demo"));
+            Screenshot screenshot = screenshotRepository.findById(screenshotId)
+                    .orElseThrow(() -> new RuntimeException("Screenshot not found"));
+
+            if (!screenshot.getDemo().getId().equals(demoId)) {
+                throw new RuntimeException("Screenshot does not belong to this demo");
+            }
+
             event.setScreenshotId(screenshot.getId());
         }
 
@@ -56,9 +65,13 @@ public class ViewerService {
 
     // 세션 도입 버튼 클릭 여부 설정
     @Transactional
-    public void recordContactClick(Long sessionId, String publicId) {
-        ViewerSession session = sessionRepository.findByIdAndDemo_PublicId(sessionId, publicId)
-                .orElseThrow(() -> new RuntimeException("Session not found or does not match publicId"));
+    public void recordContactClick(Long sessionId, Long demoId) {
+        ViewerSession session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new RuntimeException("Session not found"));
+
+        if (!session.getDemo().getId().equals(demoId)) {
+            throw new RuntimeException("Session does not belong to this demo");
+        }
 
         session.setContactClicked(true);
         sessionRepository.save(session);

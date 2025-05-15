@@ -15,38 +15,38 @@ public class ViewerController {
     private final ViewerService viewerService;
 
     // 데모 조회 시작 (이메일 입력 시)
-    @PostMapping("/{publicId}/start")
+    @PostMapping("/{demoId}/start")
     public ResponseEntity<Map<String, Long>> startDemo(
-            @PathVariable String publicId,
+            @PathVariable Long demoId,
             @RequestBody Map<String, String> request
     ) {
         String email = request.get("email");
-        Long sessionId = viewerService.startSession(publicId, email);
+        Long sessionId = viewerService.startSession(demoId, email);
         return ResponseEntity.ok(Map.of("sessionId", sessionId));
     }
 
     // 스크린샷 진입 (버튼 클릭 순간)
-    @PostMapping("/{publicId}/step")
+    @PostMapping("/{demoId}/step")
     public ResponseEntity<Void> recordStep(
-            @PathVariable String publicId,
+            @PathVariable Long demoId,
             @RequestBody Map<String, Object> request
     ) {
         Long sessionId = Long.valueOf(request.get("sessionId").toString());
         Long screenshotId = Long.valueOf(request.get("screenshotId").toString());
         Long timestampMillis = Long.valueOf(request.get("timestampMillis").toString());
 
-        viewerService.recordStep(sessionId, publicId, screenshotId, timestampMillis);
+        viewerService.recordStep(sessionId, demoId, screenshotId, timestampMillis);
         return ResponseEntity.ok().build();
     }
 
     // 도입 문의 버튼 클릭
-    @PostMapping("/{publicId}/contact")
+    @PostMapping("/{demoId}/contact")
     public ResponseEntity<Void> recordContactClick(
-            @PathVariable String publicId,
+            @PathVariable Long demoId,
             @RequestBody Map<String, Object> request
     ) {
         Long sessionId = Long.valueOf(request.get("sessionId").toString());
-        viewerService.recordContactClick(sessionId, publicId);
+        viewerService.recordContactClick(sessionId, demoId);
         return ResponseEntity.ok().build();
     }
 }

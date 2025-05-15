@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -28,4 +30,6 @@ public class Screenshot {
     @ManyToOne
     @JoinColumn(name = "demo_id")
     private Demo demo;
+
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

@@ -18,5 +18,5 @@ public class ViewerEvent {
 
     private Long screenshotId; // 스크린샷 ID
     private Long timestampMillis; // 버튼 클릭 시각 (EpochMillis)
-    private LocalDateTime createdAt = LocalDateTime.now(); // 생성일
+    private LocalDateTime createdAt = LocalDateTime.now();
 }
