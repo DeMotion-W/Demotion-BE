@@ -41,6 +41,7 @@ public class DemoService {
             demo.setTitle(request.getTitle());
             demo.setSubtitle(request.getSubtitle());
             demo.setButtonColor(request.getButtonColor());
+            demo.setButtonTextColor(request.getButtonTextColor());
             demo.setUser(user);
 
             var screenshots = request.getScreenshots().stream().map(s -> {
@@ -75,6 +76,7 @@ public class DemoService {
         demo.setTitle(request.getTitle());
         demo.setSubtitle(request.getSubtitle());
         demo.setButtonColor(request.getButtonColor());
+        demo.setButtonTextColor(request.getButtonTextColor());
 
         for (UpdateDemoRequestDto.ScreenshotUpdateRequest ssReq : request.getScreenshots()) {
             Screenshot ss = screenshotRepository.findByIdAndDemoId(ssReq.getScreenshotId(), demoId)
@@ -99,6 +101,7 @@ public class DemoService {
         dto.setTitle(demo.getTitle());
         dto.setSubTitle(demo.getSubtitle());
         dto.setButtonColor(demo.getButtonColor());
+        dto.setButtonTextColor(demo.getButtonTextColor());
 
         List<DemoDetailResponseDto.ScreenshotDto> screenshots = demo.getScreenshots().stream()
                 .sorted(Comparator.comparingInt(Screenshot::getOrder))

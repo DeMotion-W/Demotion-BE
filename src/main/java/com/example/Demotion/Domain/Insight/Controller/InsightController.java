@@ -1,5 +1,7 @@
 package com.example.Demotion.Domain.Insight.Controller;
 
+import com.example.Demotion.Common.ErrorCode;
+import com.example.Demotion.Common.ErrorDomain;
 import com.example.Demotion.Domain.Insight.Dto.InsightLeadResponseDto;
 import com.example.Demotion.Domain.Insight.Dto.InsightStatResponseDto;
 import com.example.Demotion.Domain.Insight.Service.InsightService;
@@ -27,7 +29,15 @@ public class InsightController {
 
     // 데모 리드 (이메일 & CTA 클릭 여부) 조회
     @GetMapping("/leads")
-    public ResponseEntity<InsightLeadResponseDto.Response> getLeads(@PathVariable Long demoId, @AuthenticationPrincipal User user) {
+    public ResponseEntity<InsightLeadResponseDto.Response> getLeads(
+            @PathVariable Long demoId,
+            @AuthenticationPrincipal User user
+    ) {
+        if (user == null) {
+            throw new ErrorDomain(ErrorCode.MISSING_AUTHORIZATION_HEADER);
+        }
+
         return ResponseEntity.ok(insightService.getLeads(demoId, user.getId()));
     }
+
 }

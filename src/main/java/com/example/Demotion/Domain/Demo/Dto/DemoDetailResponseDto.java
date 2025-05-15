@@ -14,6 +14,7 @@ public class DemoDetailResponseDto {
     private String title;
     private String subTitle;
     private String buttonColor;
+    private String buttonTextColor;
     private List<ScreenshotDto> screenshots;
 
     public static DemoDetailResponseDto fromEntity(Demo demo) {
@@ -22,6 +23,7 @@ public class DemoDetailResponseDto {
         dto.setTitle(demo.getTitle());
         dto.setSubTitle(demo.getSubtitle());
         dto.setButtonColor(demo.getButtonColor());
+        dto.setButtonTextColor(demo.getButtonTextColor());
 
         List<ScreenshotDto> screenshotDtos = demo.getScreenshots().stream()
                 .sorted(Comparator.comparingInt(Screenshot::getOrder)) // order 기준으로 오름차순 정렬

@@ -1,5 +1,7 @@
 package com.example.Demotion.Domain.Insight.Service;
 
+import com.example.Demotion.Common.ErrorCode;
+import com.example.Demotion.Common.ErrorDomain;
 import com.example.Demotion.Domain.Demo.Entity.Demo;
 import com.example.Demotion.Domain.Demo.Entity.Screenshot;
 import com.example.Demotion.Domain.Demo.Repository.DemoRepository;
@@ -24,7 +26,7 @@ public class ViewerService {
     // 세션 생성
     public Long startSession(Long demoId, String email) {
         Demo demo = demoRepository.findById(demoId)
-                .orElseThrow(() -> new RuntimeException("Demo not found"));
+                .orElseThrow(() -> new ErrorDomain(ErrorCode.DEMO_NOT_FOUND));
 
         ViewerSession session = new ViewerSession();
         session.setDemo(demo);
@@ -36,10 +38,10 @@ public class ViewerService {
     // 세션별 이벤트 생성
     public void recordStep(Long sessionId, Long demoId, Long screenshotId, Long timestampMillis) {
         ViewerSession session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new RuntimeException("Session not found"));
+                .orElseThrow(() -> new ErrorDomain(ErrorCode.DEMO_NOT_FOUND));
 
         if (!session.getDemo().getId().equals(demoId)) {
-            throw new RuntimeException("Session does not belong to this demo");
+            throw new ErrorDomain(ErrorCode.DEMO_NOT_FOUND);
         }
 
         ViewerEvent event = new ViewerEvent();
@@ -47,14 +49,13 @@ public class ViewerService {
         event.setTimestampMillis(timestampMillis);
 
         if (screenshotId == 0L) {
-            // 썸네일 클릭 이벤트는 검증 없이 기록
             event.setScreenshotId(0L);
         } else {
             Screenshot screenshot = screenshotRepository.findById(screenshotId)
-                    .orElseThrow(() -> new RuntimeException("Screenshot not found"));
+                    .orElseThrow(() -> new ErrorDomain(ErrorCode.DEMO_NOT_FOUND));
 
             if (!screenshot.getDemo().getId().equals(demoId)) {
-                throw new RuntimeException("Screenshot does not belong to this demo");
+                throw new ErrorDomain(ErrorCode.DEMO_NOT_FOUND);
             }
 
             event.setScreenshotId(screenshot.getId());
