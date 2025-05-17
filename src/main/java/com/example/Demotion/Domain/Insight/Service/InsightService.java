@@ -12,7 +12,6 @@ import com.example.Demotion.Domain.Insight.Repository.ViewerEventRepository;
 import com.example.Demotion.Domain.Insight.Repository.ViewerSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 
 @Service
@@ -33,23 +32,28 @@ public class InsightService {
         Demo demo = demoRepository.findById(demoId)
                 .orElseThrow(() -> new ErrorDomain(ErrorCode.DEMO_NOT_FOUND));
 
+        // 사용자 권한 확인
         if (!demo.getUser().getId().equals(userId)) {
             throw new ErrorDomain(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        List<ViewerSession> sessions = sessionRepository.findAllByDemoId(demoId);
-        List<ViewerEvent> events = eventRepository.findAllBySession_DemoId(demoId);
+        List<ViewerSession> sessions = sessionRepository.findAllByDemoId(demoId); // 해당 데모를 시청한 세션들
+        List<ViewerEvent> events = eventRepository.findAllBySession_DemoId(demoId); // 해당 데모에서 발생한 이벤트들
 
+        // [조회수]
         int viewCount = sessions.size();
+
         int completedCount = 0;
         Map<Long, List<Long>> durationMap = new HashMap<>();
         Map<Long, Integer> viewCountMap = new HashMap<>();
 
+        // 해당 데모의 모든 스크린샷
         List<Long> allScreenshotIds = demo.getScreenshots().stream()
                 .map(s -> s.getId())
                 .toList();
 
-        Long lastScreenshotId = demo.getScreenshots().get(demo.getScreenshots().size() - 1).getId();
+        Long lastScreenshotId = demo.getScreenshots().get(demo.getScreenshots().size()-1).getId(); // 마지막 ScreenshotId 계산 -> 1 빼야되는지 재확인 필요
+        System.out.println("마지막 스크린샷 ID = " + lastScreenshotId);
 
         for (ViewerSession session : sessions) {
             List<ViewerEvent> evts = events.stream()
@@ -57,36 +61,66 @@ public class InsightService {
                     .sorted(Comparator.comparingLong(ViewerEvent::getTimestampMillis))
                     .toList();
 
+            // 조회수 집계 (0번은 제외)
             for (ViewerEvent e : evts) {
                 Long sid = e.getScreenshotId();
-                viewCountMap.put(sid, viewCountMap.getOrDefault(sid, 0) + 1);
+                if (sid != 0L) {
+                    viewCountMap.put(sid, viewCountMap.getOrDefault(sid, 0) + 1);
+                }
             }
 
+            // 마지막 스크린샷 다음 ID도 조회수에 포함
+            if (!evts.isEmpty()) {
+                Long lastId = evts.get(evts.size() - 1).getScreenshotId();
+                Long nextId = lastId + 1;
+
+                if (allScreenshotIds.contains(nextId)) {
+                    viewCountMap.put(nextId, viewCountMap.getOrDefault(nextId, 0) + 1);
+                }
+            }
+
+            // 체류시간 계산
             for (int i = 1; i < evts.size(); i++) {
-                Long prevId = evts.get(i - 1).getScreenshotId();
-                Long currId = evts.get(i).getScreenshotId();
-                if (Objects.equals(prevId, currId)) continue;
+                ViewerEvent prev = evts.get(i - 1);
+                ViewerEvent curr = evts.get(i);
 
-                long duration = evts.get(i).getTimestampMillis() - evts.get(i - 1).getTimestampMillis();
-                durationMap.computeIfAbsent(currId, k -> new ArrayList<>()).add(duration);
+                // 썸네일(0) → 첫 스크린샷(6) 이런 경우만 duration 기록
+                if (prev.getScreenshotId() == 0L && curr.getScreenshotId() != 0L) {
+                    long duration = curr.getTimestampMillis() - prev.getTimestampMillis();
+                    durationMap.computeIfAbsent(curr.getScreenshotId(), k -> new ArrayList<>()).add(duration);
+                }
+
+                // 이후 구간도 기록 (ex: 6 → 7, 7 → 8 ...)
+                if (prev.getScreenshotId() != 0L && curr.getScreenshotId() != 0L
+                        && !prev.getScreenshotId().equals(curr.getScreenshotId())) {
+                    long duration = curr.getTimestampMillis() - prev.getTimestampMillis();
+                    durationMap.computeIfAbsent(curr.getScreenshotId(), k -> new ArrayList<>()).add(duration);
+                }
             }
 
+            // 완주 여부 체크 (마지막이 해당 demo의 마지막 스크린샷인지)
             if (!evts.isEmpty() && Objects.equals(evts.get(evts.size() - 1).getScreenshotId(), lastScreenshotId)) {
                 completedCount++;
             }
         }
+
 
         double completionRate = viewCount == 0 ? 0 : ((double) completedCount * 100) / viewCount;
 
         List<InsightStatResponseDto.Response.ScreenshotStat> stats = new ArrayList<>();
         for (Long sid : allScreenshotIds) {
             int count = viewCountMap.getOrDefault(sid, 0);
-            List<Long> durations = durationMap.getOrDefault(sid, null);
-            Long avgDuration = (durations == null || durations.isEmpty())
-                    ? null
-                    : Math.round(durations.stream().mapToLong(l -> l).average().orElse(0));
+            List<Long> durations = durationMap.get(sid);
+
+            // null이나 빈 리스트일 경우 0L로 대체
+            double avgDuration = (durations == null || durations.isEmpty())
+                    ? 0.0
+                    : durations.stream().mapToLong(l -> l).average().orElse(0);
+
             stats.add(new InsightStatResponseDto.Response.ScreenshotStat(sid, count, avgDuration));
         }
+
+
 
         return new InsightStatResponseDto.Response(viewCount, completionRate, stats);
     }

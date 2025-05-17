@@ -19,6 +19,6 @@ public class ViewerSession {
     private Demo demo; // 조회 데모
 
     private String email; // 이메일
-    private boolean contactClicked = false; // 도입 문의 여부
-    private LocalDateTime createdAt = LocalDateTime.now(); // 생성잉ㄹ
+    private boolean contactClicked = false; // cta 클릭 여부
+    private LocalDateTime createdAt = LocalDateTime.now(); // 생성일
 }

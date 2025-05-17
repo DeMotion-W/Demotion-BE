@@ -8,6 +8,6 @@ public class InsightStatResponseDto{
             double completionRate,
             List<ScreenshotStat> screenshotStats
     ) {
-        public record ScreenshotStat(Long screenshotId, int viewCount, long avgDurationMillis) {}
+        public record ScreenshotStat(Long screenshotId, int viewCount, double avgDurationMillis) {}
     }
 }

@@ -16,7 +16,7 @@ public class ViewerEvent {
     @ManyToOne(fetch = FetchType.LAZY)
     private ViewerSession session; // 세션
 
-    private Long screenshotId; // 스크린샷 ID
+    private Long screenshotId; // 스크린샷 ID (썸네일은 screenshotId 0)
     private Long timestampMillis; // 버튼 클릭 시각 (EpochMillis)
     private LocalDateTime createdAt = LocalDateTime.now();
 }

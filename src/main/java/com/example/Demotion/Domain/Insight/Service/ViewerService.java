@@ -37,6 +37,7 @@ public class ViewerService {
 
     // 세션별 이벤트 생성
     public void recordStep(Long sessionId, Long demoId, Long screenshotId, Long timestampMillis) {
+
         ViewerSession session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new ErrorDomain(ErrorCode.DEMO_NOT_FOUND));
 
