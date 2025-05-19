@@ -2,11 +2,13 @@ package com.example.Demotion.Domain.Insight.Controller;
 
 import com.example.Demotion.Common.ErrorCode;
 import com.example.Demotion.Common.ErrorDomain;
+import com.example.Demotion.Domain.Insight.Dto.StayTimeDto;
 import com.example.Demotion.Domain.Insight.Service.ViewerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -68,4 +70,11 @@ public class ViewerController {
         viewerService.recordContactClick(sessionId, demoId);
         return ResponseEntity.ok().build();
     }
+
+    // 세션별 체류시간 반환
+    @GetMapping("/sessions/{sessionId}/stay-times")
+    public ResponseEntity<List<StayTimeDto>> getStayTimes(@PathVariable Long sessionId) {
+        return ResponseEntity.ok(viewerService.getStayTimesForSession(sessionId));
+    }
+
 }

@@ -79,7 +79,8 @@ public class SecurityConfig{
         CorsConfiguration securedConfig = new CorsConfiguration();
         securedConfig.setAllowedOrigins(List.of(
                 "chrome-extension://gacolobcbkjjijkdnheifekgijfocbda",
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "https://demotion-fe.vercel.app"
         ));
         securedConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         securedConfig.setAllowedHeaders(List.of("*"));
@@ -89,7 +90,8 @@ public class SecurityConfig{
         CorsConfiguration publicConfig = new CorsConfiguration();
         publicConfig.setAllowedOrigins(List.of(
                 "chrome-extension://gacolobcbkjjijkdnheifekgijfocbda",
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "https://demotion-fe.vercel.app"
         ));
         publicConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         publicConfig.setAllowedHeaders(List.of("*"));

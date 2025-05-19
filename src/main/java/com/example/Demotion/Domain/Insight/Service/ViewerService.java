@@ -6,6 +6,7 @@ import com.example.Demotion.Domain.Demo.Entity.Demo;
 import com.example.Demotion.Domain.Demo.Entity.Screenshot;
 import com.example.Demotion.Domain.Demo.Repository.DemoRepository;
 import com.example.Demotion.Domain.Demo.Repository.ScreenshotRepository;
+import com.example.Demotion.Domain.Insight.Dto.StayTimeDto;
 import com.example.Demotion.Domain.Insight.Entity.ViewerEvent;
 import com.example.Demotion.Domain.Insight.Entity.ViewerSession;
 import com.example.Demotion.Domain.Insight.Repository.ViewerEventRepository;
@@ -13,6 +14,9 @@ import com.example.Demotion.Domain.Insight.Repository.ViewerSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,8 +40,8 @@ public class ViewerService {
     }
 
     // 세션별 이벤트 생성
+    @Transactional
     public void recordStep(Long sessionId, Long demoId, Long screenshotId, Long timestampMillis) {
-
         ViewerSession session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new ErrorDomain(ErrorCode.DEMO_NOT_FOUND));
 
@@ -45,9 +49,18 @@ public class ViewerService {
             throw new ErrorDomain(ErrorCode.DEMO_NOT_FOUND);
         }
 
+        // 이전 이벤트가 있으면 stayTimeMillis 계산
+        eventRepository.findTopBySessionIdOrderByTimestampMillisDesc(sessionId).ifPresent(previous -> {
+            long stayTime = timestampMillis - previous.getTimestampMillis();
+            previous.setStayTimeMillis(stayTime);
+            eventRepository.save(previous);
+        });
+
+        // 새 이벤트 생성
         ViewerEvent event = new ViewerEvent();
         event.setSession(session);
         event.setTimestampMillis(timestampMillis);
+        event.setStayTimeMillis(null); // 아직 체류 시간 없음
 
         if (screenshotId == 0L) {
             event.setScreenshotId(0L);
@@ -65,6 +78,7 @@ public class ViewerService {
         eventRepository.save(event);
     }
 
+
     // 세션 도입 버튼 클릭 여부 설정
     @Transactional
     public void recordContactClick(Long sessionId, Long demoId) {
@@ -77,5 +91,17 @@ public class ViewerService {
 
         session.setContactClicked(true);
         sessionRepository.save(session);
+    }
+
+    public List<StayTimeDto> getStayTimesForSession(Long sessionId) {
+        List<ViewerEvent> events = eventRepository.findBySessionIdOrderByTimestampMillisAsc(sessionId);
+
+        return events.stream()
+                .filter(e -> e.getStayTimeMillis() != null)
+                .map(e -> new StayTimeDto(
+                        e.getScreenshotId(),
+                        e.getStayTimeMillis()
+                ))
+                .collect(Collectors.toList());
     }
 }
