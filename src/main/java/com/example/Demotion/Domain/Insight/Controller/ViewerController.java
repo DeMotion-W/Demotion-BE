@@ -2,6 +2,7 @@ package com.example.Demotion.Domain.Insight.Controller;
 
 import com.example.Demotion.Common.ErrorCode;
 import com.example.Demotion.Common.ErrorDomain;
+import com.example.Demotion.Common.SlackNotificationService;
 import com.example.Demotion.Domain.Insight.Dto.StayTimeDto;
 import com.example.Demotion.Domain.Insight.Service.ViewerService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.Map;
 public class ViewerController {
 
     private final ViewerService viewerService;
+    private final SlackNotificationService slackNotificationService;
 
     // 데모 조회 시작 (이메일 입력 시)
     @PostMapping("/{demoId}/start")
@@ -35,6 +37,7 @@ public class ViewerController {
         }
 
         Long sessionId = viewerService.startSession(demoId, email);
+        slackNotificationService.sendSlackMessage("🛎️ 새로운 데모 세션이 시작되었습니다!\nDemo: https://demo.link");
         return ResponseEntity.ok(Map.of("sessionId", sessionId));
     }
 
