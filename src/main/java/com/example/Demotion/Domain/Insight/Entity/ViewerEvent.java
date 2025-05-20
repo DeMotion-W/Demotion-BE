@@ -14,7 +14,8 @@ public class ViewerEvent {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private ViewerSession session; // 세션
+    @JoinColumn(name = "session_id", foreignKey = @ForeignKey(name = "fk_viewerevent_session"))
+    private ViewerSession session;
 
     private Long screenshotId; // 스크린샷 ID (썸네일은 screenshotId 0)
     private Long timestampMillis; // 버튼 클릭 시각 (EpochMillis)

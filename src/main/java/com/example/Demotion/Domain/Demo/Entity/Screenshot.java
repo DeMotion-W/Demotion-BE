@@ -28,8 +28,8 @@ public class Screenshot {
     private float positionY; // 포인터 x좌표
     private LocalDateTime createdAt = LocalDateTime.now(); // 생성일
 
-    // Demo
-    @ManyToOne
-    @JoinColumn(name = "demo_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "demo_id", foreignKey = @ForeignKey(name = "fk_screenshot_demo"))
     private Demo demo;
+
 }
