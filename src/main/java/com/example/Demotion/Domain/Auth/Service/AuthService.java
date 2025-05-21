@@ -4,9 +4,11 @@ import com.example.Demotion.Common.ErrorCode;
 import com.example.Demotion.Common.ErrorDomain;
 import com.example.Demotion.Domain.Auth.Config.JwtUtil;
 import com.example.Demotion.Domain.Auth.Dto.LoginResponseDto;
+import com.example.Demotion.Domain.Auth.Entity.AccessTokenLog;
 import com.example.Demotion.Domain.Auth.Entity.EmailVerificationCode;
 import com.example.Demotion.Domain.Auth.Entity.RefreshToken;
 import com.example.Demotion.Domain.Auth.Entity.User;
+import com.example.Demotion.Domain.Auth.Repository.AccessTokenLogRepository;
 import com.example.Demotion.Domain.Auth.Repository.EmailVerificationCodeRepository;
 import com.example.Demotion.Domain.Auth.Repository.RefreshTokenRepository;
 import com.example.Demotion.Domain.Auth.Repository.UserRepository;
@@ -30,6 +32,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
     private final EmailVerificationCodeRepository codeRepository;
+    private final AccessTokenLogRepository accessTokenLogRepository;
 
     public class DuplicateEmailException extends RuntimeException {}
 
@@ -59,6 +62,15 @@ public class AuthService {
         }
 
         String accessToken = jwtUtil.generateToken(user.getEmail());
+        // 저장
+        accessTokenLogRepository.save(
+                AccessTokenLog.builder()
+                        .userId(user.getId())
+                        .email(user.getEmail())
+                        .accessToken(accessToken)
+                        .createdAt(LocalDateTime.now())
+                        .build()
+        );
         String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
 
         refreshTokenRepository.deleteByEmail(user.getEmail());

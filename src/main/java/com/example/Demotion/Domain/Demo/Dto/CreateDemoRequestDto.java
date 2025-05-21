@@ -10,7 +10,7 @@ public class CreateDemoRequestDto {
 
     private String title;
     private String subtitle;
-    private String buttonColor;
+    private String buttonBgColor;
     private String buttonTextColor;
     private List<ScreenshotRequest> screenshots;
 
@@ -18,7 +18,8 @@ public class CreateDemoRequestDto {
     public static class ScreenshotRequest {
         private String fileUrl;
         private String buttonText;
-        private String buttonColor;
+        private String buttonBgColor;
+        private String buttonTextColor;
         private String buttonStyle; // nullable
         private int positionX;
         private int positionY;

@@ -17,12 +17,10 @@ public class Screenshot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "step_order")
-    private int order;
-
     private String fileUrl; // 객체 URL
     private String buttonText; // 버튼 텍스트
-    private String buttonColor; // 버튼 색상
+    private String buttonBgColor; // 버튼 색상
+    private String buttonTextColor; // 버튼 텍스트 색상
     private String buttonStyle; // 버튼 유형
     private float positionX; // 포인터 x좌표
     private float positionY; // 포인터 x좌표

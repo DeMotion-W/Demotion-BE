@@ -9,7 +9,7 @@ public class UpdateDemoRequestDto {
 
     private String title;
     private String subtitle;
-    private String buttonColor;
+    private String buttonBgColor;
     private String buttonTextColor;
     private List<ScreenshotUpdateRequest> screenshots;
 
@@ -17,7 +17,8 @@ public class UpdateDemoRequestDto {
     public static class ScreenshotUpdateRequest {
         private Long screenshotId;
         private String buttonText;
-        private String buttonColor;
+        private String buttonBgColor;
+        private String buttonTextColor;
         private String buttonStyle;
     }
 }

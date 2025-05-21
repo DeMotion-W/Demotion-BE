@@ -23,12 +23,12 @@ public class Demo {
 
     private String title; // 제목
     private String subtitle; // 부제목
-    private String buttonColor; // 버튼 색상
+    private String buttonBgColor; // 버튼 색상
     private String buttonTextColor; // 버튼 텍스트 컬러
     private LocalDateTime createdAt = LocalDateTime.now(); // 생성일
 
     // 스크린샷 목록
-    @OneToMany(mappedBy = "demo", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "demo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Screenshot> screenshots = new ArrayList<>();
 
     // User

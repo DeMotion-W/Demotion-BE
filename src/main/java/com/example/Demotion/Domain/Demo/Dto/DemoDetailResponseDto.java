@@ -13,7 +13,7 @@ public class DemoDetailResponseDto {
     private Long demoId;
     private String title;
     private String subTitle;
-    private String buttonColor;
+    private String buttonBgColor;
     private String buttonTextColor;
     private List<ScreenshotDto> screenshots;
 
@@ -22,11 +22,10 @@ public class DemoDetailResponseDto {
         dto.setDemoId(demo.getId());
         dto.setTitle(demo.getTitle());
         dto.setSubTitle(demo.getSubtitle());
-        dto.setButtonColor(demo.getButtonColor());
+        dto.setButtonBgColor(demo.getButtonBgColor());
         dto.setButtonTextColor(demo.getButtonTextColor());
 
         List<ScreenshotDto> screenshotDtos = demo.getScreenshots().stream()
-                .sorted(Comparator.comparingInt(Screenshot::getOrder)) // order 기준으로 오름차순 정렬
                 .map(ScreenshotDto::fromEntity)// 정렬된 screenshot 객체 하나씩 받아서 dto로 변환
                 .collect(Collectors.toList());// stream으로 흘려보낸 결과물 다시 list로 수집
 
@@ -38,9 +37,9 @@ public class DemoDetailResponseDto {
     public static class ScreenshotDto {
         private Long screenshotId;
         private String fileUrl;
-        private int order;
         private String buttonText;
-        private String buttonColor;
+        private String buttonBgColor;
+        private String buttonTextColor;
         private String buttonStyle;
         private float positionX;
         private float positionY;
@@ -49,9 +48,9 @@ public class DemoDetailResponseDto {
             ScreenshotDto dto = new ScreenshotDto();
             dto.setScreenshotId(screenshot.getId());
             dto.setFileUrl(screenshot.getFileUrl());
-            dto.setOrder(screenshot.getOrder());
             dto.setButtonText(screenshot.getButtonText());
-            dto.setButtonColor(screenshot.getButtonColor());
+            dto.setButtonBgColor(screenshot.getButtonBgColor());
+            dto.setButtonTextColor(screenshot.getButtonTextColor());
             dto.setButtonStyle(screenshot.getButtonStyle());
             dto.setPositionX(screenshot.getPositionX());
             dto.setPositionY(screenshot.getPositionY());

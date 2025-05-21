@@ -40,7 +40,7 @@ public class DemoService {
             Demo demo = new Demo();
             demo.setTitle(request.getTitle());
             demo.setSubtitle(request.getSubtitle());
-            demo.setButtonColor(request.getButtonColor());
+            demo.setButtonBgColor(request.getButtonBgColor());
             demo.setButtonTextColor(request.getButtonTextColor());
             demo.setUser(user);
 
@@ -48,7 +48,8 @@ public class DemoService {
                 Screenshot ss = new Screenshot();
                 ss.setFileUrl(s.getFileUrl());
                 ss.setButtonText(s.getButtonText());
-                ss.setButtonColor(s.getButtonColor());
+                ss.setButtonBgColor(s.getButtonBgColor());
+                ss.setButtonTextColor(s.getButtonTextColor());
                 ss.setButtonStyle(s.getButtonStyle());
                 ss.setPositionX(s.getPositionX());
                 ss.setPositionY(s.getPositionY());
@@ -75,14 +76,15 @@ public class DemoService {
 
         demo.setTitle(request.getTitle());
         demo.setSubtitle(request.getSubtitle());
-        demo.setButtonColor(request.getButtonColor());
+        demo.setButtonBgColor(request.getButtonBgColor());
         demo.setButtonTextColor(request.getButtonTextColor());
 
         for (UpdateDemoRequestDto.ScreenshotUpdateRequest ssReq : request.getScreenshots()) {
             Screenshot ss = screenshotRepository.findByIdAndDemoId(ssReq.getScreenshotId(), demoId)
                     .orElseThrow(() -> new ErrorDomain(ErrorCode.SCREENSHOT_NOT_FOUND));
             ss.setButtonText(ssReq.getButtonText());
-            ss.setButtonColor(ssReq.getButtonColor());
+            ss.setButtonBgColor(ssReq.getButtonBgColor());
+            ss.setButtonTextColor(ssReq.getButtonTextColor());
             ss.setButtonStyle(ssReq.getButtonStyle());
         }
     }
@@ -100,18 +102,17 @@ public class DemoService {
         dto.setDemoId(demo.getId());
         dto.setTitle(demo.getTitle());
         dto.setSubTitle(demo.getSubtitle());
-        dto.setButtonColor(demo.getButtonColor());
+        dto.setButtonBgColor(demo.getButtonBgColor());
         dto.setButtonTextColor(demo.getButtonTextColor());
 
         List<DemoDetailResponseDto.ScreenshotDto> screenshots = demo.getScreenshots().stream()
-                .sorted(Comparator.comparingInt(Screenshot::getOrder))
                 .map(s -> {
                     DemoDetailResponseDto.ScreenshotDto ssDto = new DemoDetailResponseDto.ScreenshotDto();
                     ssDto.setScreenshotId(s.getId());
                     ssDto.setFileUrl(s.getFileUrl());
-                    ssDto.setOrder(s.getOrder());
                     ssDto.setButtonText(s.getButtonText());
-                    ssDto.setButtonColor(s.getButtonColor());
+                    ssDto.setButtonBgColor(s.getButtonBgColor());
+                    ssDto.setButtonTextColor(s.getButtonTextColor());
                     ssDto.setButtonStyle(s.getButtonStyle());
                     ssDto.setPositionX(s.getPositionX());
                     ssDto.setPositionY(s.getPositionY());
@@ -128,13 +129,13 @@ public class DemoService {
             return demoRepository.findAllByUserId(userId).stream()
                     .map(demo -> {
                         String firstImageUrl = demo.getScreenshots().stream()
-                                .sorted(Comparator.comparingInt(Screenshot::getOrder))
                                 .findFirst()
                                 .map(Screenshot::getFileUrl)
                                 .orElse(null);
 
                         return new DemoSummaryDto(
                                 demo.getId(),
+                                demo.getTitle(),
                                 firstImageUrl,
                                 demo.getCreatedAt()
                         );

@@ -45,7 +45,7 @@ public class ViewerController {
         User user = demo.getUser();
 
         Long sessionId = viewerService.startSession(demoId, email);
-        slackService.sendMessage(user.getId(), "✅ 누군가 데모를 완료했습니다!");
+        //slackService.sendMessage(user.getId(), "✅ 누군가 데모를 완료했습니다!");
         return ResponseEntity.ok(Map.of("sessionId", sessionId));
     }
 
