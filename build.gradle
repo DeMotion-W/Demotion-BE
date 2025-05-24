@@ -56,8 +56,16 @@ dependencies {
 	// AWS
 	//implementation platform('software.amazon.awssdk:bom:2.25.0')
 	implementation 'software.amazon.awssdk:s3:2.25.0'
+
+	// Slack
+	implementation 'org.json:json:20240303' // 최신 안정 버전
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+tasks.named("jar") {
+	enabled = false
 }

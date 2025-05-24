@@ -23,6 +23,6 @@ public class EmailVerificationCode {
     @Column(nullable = false)
     private String code;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
+
 }
