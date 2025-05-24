@@ -1,8 +1,12 @@
 // DemoController.java
 package com.example.Demotion.Domain.Demo.Controller;
 
+import com.example.Demotion.Common.ErrorCode;
+import com.example.Demotion.Common.ErrorDomain;
 import com.example.Demotion.Domain.Auth.Entity.User;
 import com.example.Demotion.Domain.Demo.Dto.*;
+import com.example.Demotion.Domain.Demo.Entity.Demo;
+import com.example.Demotion.Domain.Demo.Repository.DemoRepository;
 import com.example.Demotion.Domain.Demo.Service.DemoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +21,7 @@ import java.util.List;
 public class DemoController {
 
     private final DemoService demoService;
+    private final DemoRepository demoRepository;
 
     // 데모 생성
     @PostMapping

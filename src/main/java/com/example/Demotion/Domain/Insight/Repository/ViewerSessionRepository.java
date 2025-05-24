@@ -8,4 +8,5 @@ import java.util.Optional;
 
 public interface ViewerSessionRepository extends JpaRepository<ViewerSession, Long> {
     List<ViewerSession> findAllByDemoId(Long demoId);
+    List<ViewerSession> findByDemoId(Long demoId);
 }

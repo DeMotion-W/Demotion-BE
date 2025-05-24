@@ -21,7 +21,7 @@ public class CreateDemoRequestDto {
         private String buttonBgColor;
         private String buttonTextColor;
         private String buttonStyle; // nullable
-        private int positionX;
-        private int positionY;
+        private double positionX;
+        private double positionY;
     }
 }

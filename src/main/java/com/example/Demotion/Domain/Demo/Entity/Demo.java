@@ -27,6 +27,15 @@ public class Demo {
     private String buttonTextColor; // 버튼 텍스트 컬러
     private LocalDateTime createdAt = LocalDateTime.now(); // 생성일
 
+    @Column(unique = true, nullable = false)
+    private String publicId;
+
+    @PrePersist
+    public void ensurePublicId() {
+        if (this.publicId == null) {
+            this.publicId = UUID.randomUUID().toString();
+        }
+    }
     // 스크린샷 목록
     @OneToMany(mappedBy = "demo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Screenshot> screenshots = new ArrayList<>();
@@ -38,4 +47,6 @@ public class Demo {
 
     @OneToMany(mappedBy = "demo", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<ViewerSession> viewerSessions = new ArrayList<>();
+
+
 }

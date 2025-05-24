@@ -83,25 +83,20 @@ public class ViewerService {
     @Transactional
     public void recordContactClick(Long sessionId, Long demoId) {
         ViewerSession session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new RuntimeException("Session not found"));
+                .orElseThrow(() -> new ErrorDomain(ErrorCode.USER_NOT_FOUND));
+
+        Demo demo = demoRepository.findById(demoId)
+                .orElseThrow(() -> new ErrorDomain(ErrorCode.DEMO_NOT_FOUND));
 
         if (!session.getDemo().getId().equals(demoId)) {
-            throw new RuntimeException("Session does not belong to this demo");
+            throw new ErrorDomain(ErrorCode.UNAUTHORIZED_ACCESS);  // 세션이 해당 데모에 속하지 않음
         }
 
-        session.setContactClicked(true);
-        sessionRepository.save(session);
-    }
-
-    public List<StayTimeDto> getStayTimesForSession(Long sessionId) {
-        List<ViewerEvent> events = eventRepository.findBySessionIdOrderByTimestampMillisAsc(sessionId);
-
-        return events.stream()
-                .filter(e -> e.getStayTimeMillis() != null)
-                .map(e -> new StayTimeDto(
-                        e.getScreenshotId(),
-                        e.getStayTimeMillis()
-                ))
-                .collect(Collectors.toList());
+        try {
+            session.setContactClicked(true); // "도입문의 클릭 여부" 필드가 있다고 가정
+            sessionRepository.save(session);
+        } catch (Exception e) {
+            throw new ErrorDomain(ErrorCode.DEMO_DB_SAVE_FAILED); // DB 저장 실패
+        }
     }
 }

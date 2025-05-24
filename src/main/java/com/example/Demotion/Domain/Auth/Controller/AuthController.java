@@ -46,9 +46,9 @@ public class AuthController {
             return ResponseEntity.ok(result);
 
         } catch (UsernameNotFoundException | BadCredentialsException e) {
-            throw new ErrorDomain(ErrorCode.INVALID_CREDENTIALS); // 명세 1002
+            throw new ErrorDomain(ErrorCode.INVALID_CREDENTIALS);
         } catch (Exception e) {
-            throw new ErrorDomain(ErrorCode.INTERNAL_SERVER_ERROR); // 명세 1500
+            throw new ErrorDomain(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -59,7 +59,7 @@ public class AuthController {
             HttpServletResponse response
     ) {
         try {
-            LoginResponseDto newToken = authService.refreshAccessToken(refreshToken, response);
+            AccessTokenResponseDto newToken = authService.refreshAccessToken(refreshToken, response);
             return ResponseEntity.ok(newToken);
 
         } catch (ErrorDomain e) {

@@ -11,8 +11,9 @@ import java.util.stream.Collectors;
 public class DemoDetailResponseDto {
 
     private Long demoId;
+    private String publicId;
     private String title;
-    private String subTitle;
+    private String subtitle;
     private String buttonBgColor;
     private String buttonTextColor;
     private List<ScreenshotDto> screenshots;
@@ -20,8 +21,9 @@ public class DemoDetailResponseDto {
     public static DemoDetailResponseDto fromEntity(Demo demo) {
         DemoDetailResponseDto dto = new DemoDetailResponseDto();
         dto.setDemoId(demo.getId());
+        dto.setPublicId(demo.getPublicId());
         dto.setTitle(demo.getTitle());
-        dto.setSubTitle(demo.getSubtitle());
+        dto.setSubtitle(demo.getSubtitle());
         dto.setButtonBgColor(demo.getButtonBgColor());
         dto.setButtonTextColor(demo.getButtonTextColor());
 
@@ -41,8 +43,8 @@ public class DemoDetailResponseDto {
         private String buttonBgColor;
         private String buttonTextColor;
         private String buttonStyle;
-        private float positionX;
-        private float positionY;
+        private double positionX;
+        private double positionY;
 
         public static ScreenshotDto fromEntity(Screenshot screenshot) {
             ScreenshotDto dto = new ScreenshotDto();

@@ -6,5 +6,5 @@ public class InsightLeadResponseDto{
     public record Response(
             List<Lead> leads
     ) {
-        public record Lead(String email, boolean contactClicked) {}
+        public record Lead(Long sessionId, String email, boolean contactClicked) {}
     }}

@@ -100,8 +100,9 @@ public class DemoService {
 
         DemoDetailResponseDto dto = new DemoDetailResponseDto();
         dto.setDemoId(demo.getId());
+        dto.setPublicId(demo.getPublicId());
         dto.setTitle(demo.getTitle());
-        dto.setSubTitle(demo.getSubtitle());
+        dto.setSubtitle(demo.getSubtitle());
         dto.setButtonBgColor(demo.getButtonBgColor());
         dto.setButtonTextColor(demo.getButtonTextColor());
 
@@ -135,6 +136,7 @@ public class DemoService {
 
                         return new DemoSummaryDto(
                                 demo.getId(),
+                                demo.getPublicId(),
                                 demo.getTitle(),
                                 firstImageUrl,
                                 demo.getCreatedAt()
@@ -160,6 +162,15 @@ public class DemoService {
             throw new ErrorDomain(ErrorCode.DEMO_DELETE_FAILED);
         }
     }
+
+    @Transactional
+    public DemoDetailResponseDto getDemoByPublicId(String publicId) {
+        Demo demo = demoRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ErrorDomain(ErrorCode.DEMO_NOT_FOUND));
+
+        return DemoDetailResponseDto.fromEntity(demo);
+    }
+
 }
 
 

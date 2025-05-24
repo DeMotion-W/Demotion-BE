@@ -82,10 +82,4 @@ public class ViewerController {
         return ResponseEntity.ok().build();
     }
 
-    // 세션별 체류시간 반환
-    @GetMapping("/sessions/{sessionId}/stay-times")
-    public ResponseEntity<List<StayTimeDto>> getStayTimes(@PathVariable Long sessionId) {
-        return ResponseEntity.ok(viewerService.getStayTimesForSession(sessionId));
-    }
-
 }

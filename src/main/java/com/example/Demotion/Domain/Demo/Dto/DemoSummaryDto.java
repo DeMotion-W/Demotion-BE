@@ -10,6 +10,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class DemoSummaryDto {
     private Long demoId;
+    private String publicId;
     private String title;
     private String firstScreenshotUrl;
     private LocalDateTime createdAt;

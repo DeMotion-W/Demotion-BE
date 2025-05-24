@@ -3,6 +3,7 @@ package com.example.Demotion.Domain.Auth.Service;
 import com.example.Demotion.Common.ErrorCode;
 import com.example.Demotion.Common.ErrorDomain;
 import com.example.Demotion.Domain.Auth.Config.JwtUtil;
+import com.example.Demotion.Domain.Auth.Dto.AccessTokenResponseDto;
 import com.example.Demotion.Domain.Auth.Dto.LoginResponseDto;
 import com.example.Demotion.Domain.Auth.Entity.AccessTokenLog;
 import com.example.Demotion.Domain.Auth.Entity.EmailVerificationCode;
@@ -62,15 +63,6 @@ public class AuthService {
         }
 
         String accessToken = jwtUtil.generateToken(user.getEmail());
-        // 저장
-        accessTokenLogRepository.save(
-                AccessTokenLog.builder()
-                        .userId(user.getId())
-                        .email(user.getEmail())
-                        .accessToken(accessToken)
-                        .createdAt(LocalDateTime.now())
-                        .build()
-        );
         String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
 
         refreshTokenRepository.deleteByEmail(user.getEmail());
@@ -87,13 +79,13 @@ public class AuthService {
         );
         response.setHeader("Set-Cookie", cookieValue);
 
-        return new LoginResponseDto("Bearer " + accessToken, user.getId());
+        return new LoginResponseDto("Bearer " + accessToken, user.getId(), user.getName());
     }
 
 
 
     // 토큰 갱신
-    public LoginResponseDto refreshAccessToken(String refreshToken, HttpServletResponse response) {
+    public AccessTokenResponseDto refreshAccessToken(String refreshToken, HttpServletResponse response) {
         if (refreshToken == null || !jwtUtil.validateToken(refreshToken)) {
             throw new ErrorDomain(ErrorCode.INVALID_REFRESH_TOKEN);
         }
@@ -122,7 +114,7 @@ public class AuthService {
         );
         response.setHeader("Set-Cookie", cookieValue);
 
-        return new LoginResponseDto("Bearer " + newAccessToken, null);
+        return new AccessTokenResponseDto("Bearer " + newAccessToken);
     }
 
 

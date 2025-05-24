@@ -22,8 +22,8 @@ public class Screenshot {
     private String buttonBgColor; // 버튼 색상
     private String buttonTextColor; // 버튼 텍스트 색상
     private String buttonStyle; // 버튼 유형
-    private float positionX; // 포인터 x좌표
-    private float positionY; // 포인터 x좌표
+    private double positionX; // 포인터 x좌표
+    private double positionY; // 포인터 x좌표
     private LocalDateTime createdAt = LocalDateTime.now(); // 생성일
 
     @ManyToOne(fetch = FetchType.LAZY)

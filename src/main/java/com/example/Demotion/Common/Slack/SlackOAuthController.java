@@ -19,10 +19,16 @@ public class SlackOAuthController {
     private final SlackService slackService;
 
     @GetMapping("/oauth/callback")
-    public String oauthCallback(@RequestParam("code") String code, Principal principal) {
-        slackService.exchangeToken(code, Long.parseLong(principal.getName()));
-        return "Slack 연동 완료! 채널을 선택하세요.";
+    public String oauthCallback(@RequestParam String code, @RequestParam(required = false) String state) {
+        System.out.println("✅ code: " + code);
+        System.out.println("✅ state: " + state);
+
+        Long testUserId = 1L; // 테스트용 유저 ID
+        slackService.exchangeToken(code, testUserId);
+
+        return "Slack 연동 완료!";
     }
+
 
     @GetMapping("/channels")
     public List<ChannelDto> getChannels(Principal principal) {

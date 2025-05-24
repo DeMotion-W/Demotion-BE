@@ -6,6 +6,7 @@ import com.example.Demotion.Domain.Demo.Entity.Demo;
 import com.example.Demotion.Domain.Demo.Repository.DemoRepository;
 import com.example.Demotion.Domain.Insight.Dto.InsightLeadResponseDto;
 import com.example.Demotion.Domain.Insight.Dto.InsightStatResponseDto;
+import com.example.Demotion.Domain.Insight.Dto.StayTimeDto;
 import com.example.Demotion.Domain.Insight.Entity.ViewerEvent;
 import com.example.Demotion.Domain.Insight.Entity.ViewerSession;
 import com.example.Demotion.Domain.Insight.Repository.ViewerEventRepository;
@@ -13,6 +14,7 @@ import com.example.Demotion.Domain.Insight.Repository.ViewerSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -130,20 +132,27 @@ public class InsightService {
      * 각 리드가 CTA(도입 문의) 버튼을 클릭했는지도 함께 반환합니다.
      */
     public InsightLeadResponseDto.Response getLeads(Long demoId, Long userId) {
-        Demo demo = demoRepository.findById(demoId)
+        var demo = demoRepository.findById(demoId)
                 .orElseThrow(() -> new ErrorDomain(ErrorCode.DEMO_NOT_FOUND));
 
         if (!demo.getUser().getId().equals(userId)) {
             throw new ErrorDomain(ErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        List<ViewerSession> sessions = sessionRepository.findAllByDemoId(demoId);
+        List<ViewerSession> sessions = sessionRepository.findByDemoId(demoId);
+
         List<InsightLeadResponseDto.Response.Lead> leads = sessions.stream()
-                .map(s -> new InsightLeadResponseDto.Response.Lead(s.getEmail(), s.isContactClicked()))
-                .toList();
+                .filter(s -> s.getEmail() != null && !s.getEmail().isBlank())
+                .map(s -> new InsightLeadResponseDto.Response.Lead(
+                        s.getId(),
+                        s.getEmail(),
+                        s.isContactClicked()
+                ))
+                .collect(Collectors.toList());
 
         return new InsightLeadResponseDto.Response(leads);
     }
+
 
     /**
      * 데모 존재 여부 및 로그인 사용자의 접근 권한 검증
@@ -160,4 +169,15 @@ public class InsightService {
         return demo;
     }
 
+    public List<StayTimeDto> getStayTimesForSession(Long sessionId) {
+        List<ViewerEvent> events = eventRepository.findBySessionIdOrderByTimestampMillisAsc(sessionId);
+
+        return events.stream()
+                .filter(e -> e.getStayTimeMillis() != null)
+                .map(e -> new StayTimeDto(
+                        e.getScreenshotId(),
+                        e.getStayTimeMillis()
+                ))
+                .collect(Collectors.toList());
+    }
 }
