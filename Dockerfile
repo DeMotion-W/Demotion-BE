@@ -2,7 +2,7 @@
 FROM gradle:7.6-jdk17 AS build
 WORKDIR /home/gradle/project
 COPY . .
-RUN gradlew clean build -x test
+RUN ./gradlew clean build -x test
 
 # 2️⃣ 실행 단계
 FROM openjdk:17
