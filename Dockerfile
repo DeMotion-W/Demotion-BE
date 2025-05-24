@@ -1,11 +1,11 @@
+# 1️⃣ 빌드 단계 (Gradle 빌드)
+FROM gradle:7.6-jdk17 AS build
+WORKDIR /home/gradle/project
+COPY . .
+RUN gradle build --no-daemon
+
+# 2️⃣ 실행 단계
 FROM openjdk:17
-
-# JAR 파일을 컨테이너로 복사
-# - 현재 폴더 구조 기준으로 JAR 위치는 build/libs/Demotion-0.0.1-SNAPSHOT.jar
-COPY build/libs/Demotion-0.0.1-SNAPSHOT.jar /app/app.jar
-
-# 작업 디렉토리 설정
 WORKDIR /app
-
-# 애플리케이션 실행
+COPY --from=build /home/gradle/project/build/libs/Demotion-0.0.1-SNAPSHOT.jar /app/app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
