@@ -24,8 +24,8 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          docker build -t eunsemin2/demotion-app:latest .
-          docker push eunsemin2/demotion-app:latest
+          docker build -t eunsemin/demotion-app:latest .
+          docker push eunsemin/demotion-app:latest
 
       - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@v0.1.10
