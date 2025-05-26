@@ -5,8 +5,7 @@ import com.example.Demotion.Common.ErrorDomain;
 import com.example.Demotion.Domain.Insight.Dto.InsightLeadResponseDto;
 import com.example.Demotion.Domain.Insight.Dto.InsightStatResponseDto;
 import com.example.Demotion.Domain.Insight.Dto.StayTimeDto;
-import com.example.Demotion.Domain.Insight.Service.InsightService;
-import com.example.Demotion.Domain.Insight.Service.ViewerService;
+import com.example.Demotion.Domain.Insight.Service.ViewerQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +22,7 @@ import java.util.List;
 @RequestMapping("/api/demos")
 public class InsightController {
 
-    private final InsightService insightService;
+    private final ViewerQueryService insightService;
 
     // 데모 인사이트 요약 통계
     @GetMapping("/{demoId}/insight/stat")

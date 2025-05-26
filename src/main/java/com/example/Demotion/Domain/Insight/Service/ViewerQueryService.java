@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class InsightService {
+public class ViewerQueryService {
 
     private final DemoRepository demoRepository;
     private final ViewerSessionRepository sessionRepository;

@@ -6,42 +6,66 @@ import com.example.Demotion.Domain.Demo.Entity.Demo;
 import com.example.Demotion.Domain.Demo.Entity.Screenshot;
 import com.example.Demotion.Domain.Demo.Repository.DemoRepository;
 import com.example.Demotion.Domain.Demo.Repository.ScreenshotRepository;
-import com.example.Demotion.Domain.Insight.Dto.StayTimeDto;
 import com.example.Demotion.Domain.Insight.Entity.ViewerEvent;
 import com.example.Demotion.Domain.Insight.Entity.ViewerSession;
 import com.example.Demotion.Domain.Insight.Repository.ViewerEventRepository;
 import com.example.Demotion.Domain.Insight.Repository.ViewerSessionRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 @Service
 @RequiredArgsConstructor
-public class ViewerService {
+public class ViewerCommandService {
 
     private final DemoRepository demoRepository;
     private final ViewerSessionRepository sessionRepository;
     private final ViewerEventRepository eventRepository;
     private final ScreenshotRepository screenshotRepository;
 
+    private final BlockingQueue<Runnable> commandQueue = new LinkedBlockingQueue<>();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
     // 세션 생성
-    public Long startSession(Long demoId, String email) {
+    @PostConstruct
+    public void initQueueProcessor() {
+        executor.submit(() -> {
+            while (true) {
+                try {
+                    Runnable task = commandQueue.take();
+                    task.run();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        });
+    }
+
+    public void startSessionAsync(Long demoId, String email) {
+        commandQueue.offer(() -> startSessionSync(demoId, email));
+    }
+
+    private void startSessionSync(Long demoId, String email) {
         Demo demo = demoRepository.findById(demoId)
                 .orElseThrow(() -> new ErrorDomain(ErrorCode.DEMO_NOT_FOUND));
-
         ViewerSession session = new ViewerSession();
         session.setDemo(demo);
         session.setEmail(email);
-
-        return sessionRepository.save(session).getId();
+        sessionRepository.save(session);
     }
 
-    // 세션별 이벤트 생성
-    @Transactional
-    public void recordStep(Long sessionId, Long demoId, Long screenshotId, Long timestampMillis) {
+    public void recordStepAsync(Long sessionId, Long demoId, Long screenshotId, Long timestampMillis) {
+        commandQueue.offer(() -> recordStepSync(sessionId, demoId, screenshotId, timestampMillis));
+    }
+
+    private void recordStepSync(Long sessionId, Long demoId, Long screenshotId, Long timestampMillis) {
+        // 기존 recordStep 로직 그대로
         ViewerSession session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new ErrorDomain(ErrorCode.DEMO_NOT_FOUND));
 
@@ -78,10 +102,12 @@ public class ViewerService {
         eventRepository.save(event);
     }
 
+    public void recordContactClickAsync(Long sessionId, Long demoId) {
+        commandQueue.offer(() -> recordContactClickSync(sessionId, demoId));
+    }
 
-    // 세션 도입 버튼 클릭 여부 설정
-    @Transactional
-    public void recordContactClick(Long sessionId, Long demoId) {
+    private void recordContactClickSync(Long sessionId, Long demoId) {
+        // 기존 recordContactClick 로직 그대로
         ViewerSession session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new ErrorDomain(ErrorCode.USER_NOT_FOUND));
 
