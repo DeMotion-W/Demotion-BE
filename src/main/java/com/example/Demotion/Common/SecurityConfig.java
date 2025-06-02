@@ -88,6 +88,7 @@ public class SecurityConfig{
         securedConfig.setAllowedOrigins(List.of(
                 "chrome-extension://gacolobcbkjjijkdnheifekgijfocbda",
                 "chrome-extension://dljcpemceaokkcgaofiadhlllbpifpmf",
+                "chrome-extension://ijehlfjghemebnlpinlgnedhljlamohp",
                 "http://localhost:3000",
                 "https://demotion-fe.vercel.app"
         ));
@@ -100,6 +101,7 @@ public class SecurityConfig{
         publicConfig.setAllowedOrigins(List.of(
                 "chrome-extension://gacolobcbkjjijkdnheifekgijfocbda",
                 "chrome-extension://dljcpemceaokkcgaofiadhlllbpifpmf",
+                "chrome-extension://ijehlfjghemebnlpinlgnedhljlamohp",
                 "http://localhost:3000",
                 "https://demotion-fe.vercel.app"
         ));
