@@ -12,6 +12,7 @@
         </encoder>
     </appender>
 
+
     <!-- 파일 로그 (운영용, 색상 없음) -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/application.log</file>
@@ -27,6 +28,12 @@
     <!-- 개발 환경: 콘솔만 -->
     <springProfile name="dev">
         <root level="INFO">
+            <appender-ref ref="STDOUT"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="local">
+        <root level="DEBUG">
             <appender-ref ref="STDOUT"/>
         </root>
     </springProfile>

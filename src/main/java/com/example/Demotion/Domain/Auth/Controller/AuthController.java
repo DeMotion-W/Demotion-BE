@@ -62,13 +62,13 @@ public class AuthController {
             AccessTokenResponseDto newToken = authService.refreshAccessToken(refreshToken, response);
             return ResponseEntity.ok(newToken);
 
+
         } catch (ErrorDomain e) {
             throw e; // GlobalExceptionHandler에서 처리
         } catch (Exception e) {
             throw new ErrorDomain(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
-
     // 로그아웃
     @PostMapping("/logout")
     @Transactional
